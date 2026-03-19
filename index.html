@@ -7,9 +7,8 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
  
-  <!-- A-Frame + AR.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
-  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+  <!-- MindAR + A-Frame -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
  
   <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
@@ -20,14 +19,12 @@
       --cyan-dim: rgba(0, 245, 255, 0.15);
       --cyan-border: rgba(0, 245, 255, 0.4);
       --bg: #020810;
-      --bg2: #040d1a;
       --text: #c8e8ff;
       --grid: rgba(0, 245, 255, 0.04);
     }
  
     * { margin: 0; padding: 0; box-sizing: border-box; }
  
-    /* ===== LANDING PAGE ===== */
     #landing {
       position: fixed;
       inset: 0;
@@ -41,7 +38,6 @@
       font-family: 'Share Tech Mono', monospace;
     }
  
-    /* Animated grid background */
     #landing::before {
       content: '';
       position: absolute;
@@ -58,7 +54,6 @@
       100% { transform: translateY(40px); }
     }
  
-    /* Glowing orb */
     #landing::after {
       content: '';
       position: absolute;
@@ -82,7 +77,6 @@
       max-width: 600px;
     }
  
-    /* Scanline top decoration */
     .scan-line {
       width: 200px;
       height: 2px;
@@ -116,10 +110,7 @@
       animation: fadeUp 0.8s ease forwards 0.4s;
     }
  
-    .title span {
-      color: var(--cyan);
-      text-shadow: 0 0 30px var(--cyan), 0 0 60px rgba(0,245,255,0.3);
-    }
+    .title span { color: var(--cyan); text-shadow: 0 0 30px var(--cyan); }
  
     .subtitle {
       font-size: 0.85rem;
@@ -130,7 +121,6 @@
       animation: fadeUp 0.8s ease forwards 0.6s;
     }
  
-    /* Corner bracket decoration */
     .bracket-box {
       position: relative;
       display: inline-block;
@@ -140,13 +130,10 @@
       animation: fadeUp 0.8s ease forwards 0.8s;
     }
  
-    .bracket-box::before,
-    .bracket-box::after,
     .bracket-box .br-tl,
     .bracket-box .br-tr,
     .bracket-box .br-bl,
     .bracket-box .br-br {
-      content: '';
       position: absolute;
       width: 16px;
       height: 16px;
@@ -166,40 +153,8 @@
       letter-spacing: 0.05em;
     }
  
-    .instruction strong {
-      color: var(--cyan);
-    }
+    .instruction strong { color: var(--cyan); }
  
-    /* Marker preview */
-    .marker-preview {
-      width: 80px;
-      height: 80px;
-      border: 2px solid var(--cyan-border);
-      background: white;
-      margin: 0.5rem auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.6rem;
-      color: #333;
-      font-family: monospace;
-      position: relative;
-    }
- 
-    .marker-preview::after {
-      content: '';
-      position: absolute;
-      inset: -4px;
-      border: 1px solid var(--cyan-border);
-      animation: markerPulse 2s ease-in-out infinite;
-    }
- 
-    @keyframes markerPulse {
-      0%, 100% { opacity: 0.3; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.05); }
-    }
- 
-    /* CTA Button */
     .cta-btn {
       display: inline-flex;
       align-items: center;
@@ -231,21 +186,9 @@
     }
  
     .cta-btn:hover::before { transform: translateX(0); }
-    .cta-btn:hover {
-      box-shadow: 0 0 30px rgba(0,245,255,0.3), inset 0 0 30px rgba(0,245,255,0.05);
-      text-shadow: 0 0 10px var(--cyan);
-    }
- 
+    .cta-btn:hover { box-shadow: 0 0 30px rgba(0,245,255,0.3); }
     .cta-btn span { position: relative; z-index: 1; }
  
-    .cta-icon {
-      width: 20px;
-      height: 20px;
-      position: relative;
-      z-index: 1;
-    }
- 
-    /* Status indicator */
     .status {
       margin-top: 1.5rem;
       font-size: 0.65rem;
@@ -261,27 +204,22 @@
       animation: blink 1.5s step-end infinite;
     }
  
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
  
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
  
-    /* ===== AR SCENE ===== */
-    #ar-scene {
+    #ar-container {
       display: none;
       position: fixed;
       inset: 0;
       z-index: 500;
     }
  
-    #ar-scene.active { display: block; }
+    #ar-container.active { display: block; }
  
-    /* AR overlay UI */
     #ar-ui {
       position: fixed;
       inset: 0;
@@ -290,7 +228,6 @@
       font-family: 'Share Tech Mono', monospace;
     }
  
-    /* Corner HUD decorations */
     .hud-corner {
       position: absolute;
       width: 40px;
@@ -305,12 +242,9 @@
     .hud-bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; }
     .hud-br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
  
-    /* Top status bar */
     .ar-topbar {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 0; left: 0; right: 0;
       padding: 1rem 4rem;
       display: flex;
       justify-content: space-between;
@@ -324,21 +258,13 @@
       font-weight: 700;
       color: var(--cyan);
       letter-spacing: 0.2em;
-      text-shadow: 0 0 10px var(--cyan);
     }
  
-    .ar-status {
-      font-size: 0.6rem;
-      color: rgba(0,245,255,0.6);
-      letter-spacing: 0.15em;
-    }
+    .ar-status { font-size: 0.6rem; color: rgba(0,245,255,0.6); letter-spacing: 0.15em; }
  
-    /* Bottom info bar */
     .ar-bottombar {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
+      bottom: 0; left: 0; right: 0;
       padding: 1.5rem 4rem;
       background: linear-gradient(0deg, rgba(2,8,16,0.9) 0%, transparent 100%);
       display: flex;
@@ -347,25 +273,16 @@
       gap: 0.5rem;
     }
  
-    .ar-hint {
-      font-size: 0.7rem;
-      color: var(--text);
-      letter-spacing: 0.15em;
-      text-align: center;
-    }
- 
+    .ar-hint { font-size: 0.7rem; color: var(--text); letter-spacing: 0.15em; text-align: center; }
     .ar-hint strong { color: var(--cyan); }
  
-    /* Scanning animation */
     .scan-beam {
       position: absolute;
-      left: 0;
-      right: 0;
+      left: 0; right: 0;
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
       opacity: 0.4;
       animation: scanBeam 3s ease-in-out infinite;
-      top: 50%;
     }
  
     @keyframes scanBeam {
@@ -375,7 +292,6 @@
       100% { top: 80%; opacity: 0; }
     }
  
-    /* Back button */
     .back-btn {
       position: absolute;
       bottom: 5rem;
@@ -393,22 +309,17 @@
       transition: all 0.3s;
     }
  
-    .back-btn:hover {
-      background: var(--cyan-dim);
-      border-color: var(--cyan);
-    }
+    .back-btn:hover { background: var(--cyan-dim); }
   </style>
 </head>
  
 <body>
  
-  <!-- ===== LANDING PAGE ===== -->
+  <!-- LANDING PAGE -->
   <div id="landing">
     <div class="landing-content">
       <div class="scan-line"></div>
- 
       <div class="label">// AUGMENTED REALITY EXPERIENCE</div>
- 
       <h1 class="title">AR<span>_</span>VIEW</h1>
       <p class="subtitle">SCAN · DISCOVER · INTERACT</p>
  
@@ -419,15 +330,15 @@
         <span class="br-br"></span>
         <div class="instruction">
           <strong>STAP 01</strong> — Zorg voor goede belichting<br>
-          <strong>STAP 02</strong> — Richt camera op de Hiro-marker<br>
+          <strong>STAP 02</strong> — Richt camera op de doelafbeelding<br>
           <strong>STAP 03</strong> — Houd de camera stil<br>
           <strong>STAP 04</strong> — Het 3D-object verschijnt
         </div>
       </div>
  
       <button class="cta-btn" onclick="startAR()">
-        <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
         </svg>
         <span>START AR</span>
       </button>
@@ -436,28 +347,32 @@
     </div>
   </div>
  
-  <!-- ===== AR SCENE ===== -->
-  <div id="ar-scene">
+  <!-- AR SCENE -->
+  <div id="ar-container">
     <a-scene
-      embedded
-      arjs="sourceType: webcam; detectionMode: mono; debugUIEnabled: false;"
+      mindar-image="imageTargetSrc: targets.mind; autoStart: false;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
     >
       <a-assets>
         <!-- ⚠️ Verander 'Screw.glb' naar jouw bestandsnaam -->
         <a-asset-item id="mijnmodel" src="Screw.glb"></a-asset-item>
       </a-assets>
  
-      <a-marker preset="hiro">
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+ 
+      <!-- targetIndex: 0 = eerste afbeelding in targets.mind -->
+      <a-entity mindar-image-target="targetIndex: 0">
         <a-entity
           gltf-model="#mijnmodel"
           scale="0.5 0.5 0.5"
           position="0 0 0"
-          rotation="0 0 0"
           animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear"
         ></a-entity>
-      </a-marker>
+      </a-entity>
  
-      <a-entity camera></a-entity>
     </a-scene>
  
     <!-- HUD overlay -->
@@ -475,7 +390,7 @@
       <div class="scan-beam"></div>
  
       <div class="ar-bottombar">
-        <div class="ar-hint">Richt op de <strong>HIRO</strong> marker om het object te zien</div>
+        <div class="ar-hint">Richt op je <strong>DOELAFBEELDING</strong> om het object te zien</div>
       </div>
  
       <button class="back-btn" onclick="stopAR()">← TERUG</button>
@@ -483,14 +398,30 @@
   </div>
  
   <script>
+    let arStarted = false;
+ 
     function startAR() {
       document.getElementById('landing').style.display = 'none';
-      document.getElementById('ar-scene').classList.add('active');
+      document.getElementById('ar-container').classList.add('active');
+ 
+      if (!arStarted) {
+        arStarted = true;
+        const scene = document.querySelector('a-scene');
+        const tryStart = () => {
+          const mindar = scene.systems['mindar-image-system'];
+          if (mindar) mindar.start();
+        };
+        if (scene.hasLoaded) { tryStart(); }
+        else { scene.addEventListener('loaded', tryStart); }
+      }
     }
  
     function stopAR() {
-      document.getElementById('ar-scene').classList.remove('active');
+      document.getElementById('ar-container').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
+      const scene = document.querySelector('a-scene');
+      const mindar = scene.systems['mindar-image-system'];
+      if (mindar) mindar.pause();
     }
   </script>
  
