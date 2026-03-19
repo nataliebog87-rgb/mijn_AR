@@ -1,223 +1,52 @@
-using UnityEngine;
-using UnityEngine.XR.ARFoundation;
-using UnityEngine.XR.ARSubsystems;
-using System.Collections.Generic;
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Mijn AR</title>
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #info {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.6);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-family: sans-serif;
+        z-index: 999;
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="info">📷 Richt je camera op de Hiro-marker</div>
 
-public class ARObjectPlacer : MonoBehaviour
-{
-    [Header("AR")]
-    [SerializeField] private ARRaycastManager raycastManager;
+    <a-scene
+      embedded
+      arjs="sourceType: webcam; detectionMode: mono; debugUIEnabled: false;"
+    >
+      <a-assets>
+        <a-asset-item id="mijnmodel" src="screw.glb"></a-asset-item>
+      </a-assets>
 
-    [Header("Objecten")]
-    [SerializeField] private GameObject[] objectPrefabs;
+      <a-marker preset="hiro">
+        <a-entity
+          gltf-model="#mijnmodel"
+          scale="0.5 0.5 0.5"
+          position="0 0 0"
+          rotation="0 0 0"
+        ></a-entity>
+      </a-marker>
 
-    [Header("UI")]
-    [SerializeField] private GameObject deleteButton;
-
-    // Interne state
-    private List<ARRaycastHit> hits      = new List<ARRaycastHit>();
-    private List<GameObject>   geplaatst = new List<GameObject>();
-    private GameObject         geselecteerd;
-    private int                huidigIndex = 0;
-
-    // Schalen via pinch
-    private float beginAfstand;
-    private float beginSchaal;
-
-    // Swipe-detectie
-    private Vector2 swipeBegin;
-    private bool    isSwipe = false;
-    private const float MIN_SWIPE_AFSTAND  = 100f; // pixels
-    private const float MAX_SWIPE_TIJD     = 0.4f; // seconden
-    private float swipeBeginTijd;
-
-    // ─────────────────────────────────────────
-    //  Publieke methoden (koppel aan UI-knoppen)
-    // ─────────────────────────────────────────
-
-    /// <summary>Verwijdert het geselecteerde object uit de scene.</summary>
-    public void VerwijderGeselecteerde()
-    {
-        if (geselecteerd == null) return;
-
-        geplaatst.Remove(geselecteerd);
-        Destroy(geselecteerd);
-        GeselecteerdInstellen(null);
-    }
-
-    // ─────────────────────────────────────────
-    //  Unity lifecycle
-    // ─────────────────────────────────────────
-
-    void Update()
-    {
-        if (Input.touchCount == 0) return;
-
-        // ── 2 vingers: schalen ──
-        if (Input.touchCount == 2)
-        {
-            PinchSchalen();
-            return;
-        }
-
-        // ── 1 vinger ──
-        Touch touch = Input.GetTouch(0);
-
-        switch (touch.phase)
-        {
-            case TouchPhase.Began:
-                // Sla beginpunt op voor swipe-detectie
-                swipeBegin     = touch.position;
-                swipeBeginTijd = Time.time;
-                isSwipe        = false;
-                break;
-
-            case TouchPhase.Moved:
-                // Zodra de vinger ver genoeg beweegt, markeren als swipe
-                if (Vector2.Distance(touch.position, swipeBegin) > MIN_SWIPE_AFSTAND)
-                    isSwipe = true;
-                break;
-
-            case TouchPhase.Ended:
-                float swipeTijd = Time.time - swipeBeginTijd;
-
-                if (isSwipe && swipeTijd < MAX_SWIPE_TIJD)
-                {
-                    // ── Swipe afgehandeld: wissel prefab ──
-                    float deltaX = touch.position.x - swipeBegin.x;
-
-                    if (deltaX > 0)
-                        huidigIndex = (huidigIndex + 1) % objectPrefabs.Length;
-                    else
-                        huidigIndex = (huidigIndex - 1 + objectPrefabs.Length) % objectPrefabs.Length;
-
-                    DebugToonHuidigObject();
-                }
-                else if (!isSwipe)
-                {
-                    // ── Gewone tik: selecteren of nieuw object plaatsen ──
-                    if (!ProbeerSelecteren(touch.position))
-                    {
-                        if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
-                        {
-                            PlaatsNieuwObject(hits[0].pose);
-                        }
-                    }
-                }
-                break;
-        }
-    }
-
-    // ─────────────────────────────────────────
-    //  Plaatsen
-    // ─────────────────────────────────────────
-
-    private void PlaatsNieuwObject(Pose pose)
-    {
-        GameObject nieuw = Instantiate(
-            objectPrefabs[huidigIndex],
-            pose.position,
-            pose.rotation
-        );
-        geplaatst.Add(nieuw);
-        GeselecteerdInstellen(nieuw);
-    }
-
-    // ─────────────────────────────────────────
-    //  Selecteren
-    // ─────────────────────────────────────────
-
-    private bool ProbeerSelecteren(Vector2 schermPositie)
-    {
-        Ray ray = Camera.main.ScreenPointToRay(schermPositie);
-
-        if (Physics.Raycast(ray, out RaycastHit hit))
-        {
-            GameObject root = GeefRoot(hit.collider.gameObject);
-            if (root != null)
-            {
-                GeselecteerdInstellen(root);
-                return true;
-            }
-        }
-
-        GeselecteerdInstellen(null);
-        return false;
-    }
-
-    private GameObject GeefRoot(GameObject kind)
-    {
-        Transform t = kind.transform;
-        while (t != null)
-        {
-            if (geplaatst.Contains(t.gameObject))
-                return t.gameObject;
-            t = t.parent;
-        }
-        return null;
-    }
-
-    private void GeselecteerdInstellen(GameObject obj)
-    {
-        if (geselecteerd != null)
-            ToggleHighlight(geselecteerd, false);
-
-        geselecteerd = obj;
-
-        if (geselecteerd != null)
-            ToggleHighlight(geselecteerd, true);
-
-        if (deleteButton != null)
-            deleteButton.SetActive(geselecteerd != null);
-    }
-
-    // ─────────────────────────────────────────
-    //  Schalen (pinch)
-    // ─────────────────────────────────────────
-
-    private void PinchSchalen()
-    {
-        if (geselecteerd == null) return;
-
-        Touch t0 = Input.GetTouch(0);
-        Touch t1 = Input.GetTouch(1);
-
-        if (t1.phase == TouchPhase.Began)
-        {
-            beginAfstand = Vector2.Distance(t0.position, t1.position);
-            beginSchaal  = geselecteerd.transform.localScale.x;
-            return;
-        }
-
-        float huidigeAfstand = Vector2.Distance(t0.position, t1.position);
-        if (beginAfstand == 0) return;
-
-        float factor      = huidigeAfstand / beginAfstand;
-        float nieuweSchaal = Mathf.Clamp(beginSchaal * factor, 0.05f, 10f);
-
-        geselecteerd.transform.localScale = Vector3.one * nieuweSchaal;
-    }
-
-    // ─────────────────────────────────────────
-    //  Highlight
-    // ─────────────────────────────────────────
-
-    private void ToggleHighlight(GameObject obj, bool aan)
-    {
-        foreach (Renderer r in obj.GetComponentsInChildren<Renderer>())
-        {
-            foreach (Material mat in r.materials)
-            {
-                mat.color = aan ? new Color(0.6f, 0.9f, 1f) : Color.white;
-            }
-        }
-    }
-
-    
-
-    private void DebugToonHuidigObject()
-    {
-        if (objectPrefabs[huidigIndex] != null)
-            Debug.Log($"Huidig object: {objectPrefabs[huidigIndex].name} (index {huidigIndex})");
-    }
-}
+      <a-entity camera></a-entity>
+    </a-scene>
+  </body>
+</html>
