@@ -45,8 +45,7 @@
     }
  
     @keyframes gridMove {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(40px); }
+      0% { transform: translateY(0); } 100% { transform: translateY(40px); }
     }
  
     #landing::after {
@@ -64,6 +63,7 @@
     .landing-content {
       position: relative; z-index: 2;
       text-align: center; padding: 2rem; max-width: 640px;
+      width: 100%;
     }
  
     .scan-line {
@@ -86,7 +86,7 @@
  
     .title {
       font-family: 'Orbitron', monospace;
-      font-size: clamp(2.5rem, 8vw, 4.5rem);
+      font-size: clamp(2rem, 8vw, 4rem);
       font-weight: 900; color: white; line-height: 1;
       margin-bottom: 0.5rem; opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.4s;
@@ -96,45 +96,40 @@
  
     .subtitle {
       font-size: 0.85rem; color: var(--text);
-      letter-spacing: 0.15em; margin-bottom: 2rem;
+      letter-spacing: 0.15em; margin-bottom: 1.5rem;
       opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s;
     }
  
-    /* Marker overzicht tabel */
-    .marker-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-bottom: 2rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.7s;
+    /* Objecten lijst */
+    #model-list {
+      margin-bottom: 1.5rem;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.7s;
+      max-height: 180px; overflow-y: auto;
     }
  
-    .marker-card {
-      border: 1px solid var(--cyan-border);
-      padding: 0.6rem 0.3rem;
-      text-align: center;
-      font-size: 0.55rem;
-      letter-spacing: 0.05em;
-      color: var(--text);
+    .model-item {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.4rem 0.8rem;
+      border-bottom: 1px solid rgba(0,245,255,0.1);
+      font-size: 0.65rem;
     }
  
-    .marker-card .marker-name {
+    .model-item:last-child { border-bottom: none; }
+ 
+    .model-barcode {
       font-family: 'Orbitron', monospace;
-      font-size: 0.5rem;
-      color: var(--cyan);
-      margin-bottom: 0.3rem;
-      letter-spacing: 0.1em;
+      font-size: 0.6rem; color: var(--cyan);
+      background: rgba(0,245,255,0.1);
+      border: 1px solid var(--cyan-border);
+      padding: 0.15rem 0.4rem;
+      min-width: 60px; text-align: center;
     }
  
-    .marker-card .object-name {
-      color: white;
-      font-size: 0.55rem;
-    }
+    .model-name { color: white; flex: 1; text-align: left; margin-left: 0.8rem; }
  
     .bracket-box {
       position: relative; display: inline-block;
-      padding: 1.5rem 2rem; margin-bottom: 2rem;
+      padding: 1.2rem 2rem; margin-bottom: 1.5rem;
       opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s;
     }
  
@@ -172,6 +167,8 @@
     .cta-btn:active::before { transform: translateX(0); }
     .cta-btn span { position: relative; z-index: 1; }
  
+    .cta-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+ 
     .status {
       margin-top: 1.5rem; font-size: 0.65rem;
       letter-spacing: 0.2em; color: rgba(0,245,255,0.5);
@@ -186,6 +183,28 @@
       to { opacity: 1; transform: translateY(0); }
     }
  
+    /* ===== LOADING ===== */
+    #loading-screen {
+      display: none; position: fixed; inset: 0;
+      background: var(--bg); z-index: 2000;
+      flex-direction: column; align-items: center; justify-content: center;
+      font-family: 'Share Tech Mono', monospace;
+    }
+ 
+    #loading-screen.active { display: flex; }
+ 
+    .loader-ring {
+      width: 60px; height: 60px;
+      border: 2px solid rgba(0,245,255,0.2);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite; margin-bottom: 1.5rem;
+    }
+ 
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loader-text { font-size: 0.7rem; letter-spacing: 0.3em; color: var(--cyan); margin-bottom: 0.5rem; }
+    .loader-sub { font-size: 0.6rem; color: rgba(0,245,255,0.4); letter-spacing: 0.15em; }
+ 
     /* ===== AR SCENE ===== */
     #ar-scene { display: none; position: fixed; inset: 0; z-index: 500; }
     #ar-scene.active { display: block; }
@@ -193,8 +212,7 @@
     /* ===== AR HUD ===== */
     #ar-ui {
       position: fixed; inset: 0; z-index: 600;
-      pointer-events: none;
-      font-family: 'Share Tech Mono', monospace;
+      pointer-events: none; font-family: 'Share Tech Mono', monospace;
     }
  
     .hud-corner {
@@ -208,8 +226,7 @@
     .hud-br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
  
     .ar-topbar {
-      position: absolute; top: 0; left: 0; right: 0;
-      padding: 1rem 4rem;
+      position: absolute; top: 0; left: 0; right: 0; padding: 1rem 4rem;
       display: flex; justify-content: space-between; align-items: center;
       background: linear-gradient(180deg, rgba(2,8,16,0.8) 0%, transparent 100%);
     }
@@ -221,24 +238,20 @@
  
     .ar-status { font-size: 0.6rem; color: rgba(0,245,255,0.6); letter-spacing: 0.15em; }
  
-    /* Actief object label */
     #active-label {
       position: absolute; top: 60px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(2,8,16,0.8);
-      border: 1px solid var(--cyan-border);
-      color: var(--cyan);
+      background: rgba(2,8,16,0.85);
+      border: 1px solid var(--cyan-border); color: var(--cyan);
       font-size: 0.65rem; letter-spacing: 0.2em;
-      padding: 0.3rem 1rem;
-      opacity: 0; transition: opacity 0.3s;
-      white-space: nowrap;
+      padding: 0.4rem 1.2rem;
+      opacity: 0; transition: opacity 0.3s; white-space: nowrap;
     }
  
     #active-label.visible { opacity: 1; }
  
     .ar-bottombar {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 1.5rem 2rem;
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem 2rem;
       background: linear-gradient(0deg, rgba(2,8,16,0.9) 0%, transparent 100%);
       display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
     }
@@ -253,10 +266,8 @@
     }
  
     @keyframes scanBeam {
-      0% { top: 20%; opacity: 0; }
-      10% { opacity: 0.4; }
-      90% { opacity: 0.4; }
-      100% { top: 80%; opacity: 0; }
+      0% { top: 20%; opacity: 0; } 10% { opacity: 0.4; }
+      90% { opacity: 0.4; } 100% { top: 80%; opacity: 0; }
     }
  
     .back-btn {
@@ -267,8 +278,7 @@
       border: 1px solid var(--cyan-border); color: var(--cyan);
       font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
       letter-spacing: 0.15em; cursor: pointer;
-      pointer-events: all; transition: all 0.3s;
-      -webkit-appearance: none; border-radius: 0;
+      pointer-events: all; -webkit-appearance: none; border-radius: 0;
     }
  
     .back-btn:active { background: var(--cyan-dim); }
@@ -277,128 +287,57 @@
  
 <body>
  
-  <!-- ===== LANDING PAGE ===== -->
+  <!-- LANDING PAGE -->
   <div id="landing">
     <div class="landing-content">
       <div class="scan-line"></div>
       <div class="label">// AUGMENTED REALITY EXPERIENCE</div>
       <h1 class="title">AR<span>_</span>VIEW</h1>
-      <p class="subtitle">5 OBJECTEN — 5 MARKERS</p>
+      <p class="subtitle" id="model-count">MODELLEN LADEN...</p>
  
-      <!-- Marker overzicht -->
-      <div class="marker-grid">
-        <div class="marker-card">
-          <div class="marker-name">HIRO</div>
-          <div class="object-name">Screw</div>
-        </div>
-        <div class="marker-card">
-          <div class="marker-name">KANJI</div>
-          <div class="object-name">Hand</div>
-        </div>
-        <div class="marker-card">
-          <div class="marker-name">NR 0</div>
-          <div class="object-name">GH4</div>
-        </div>
-        <div class="marker-card">
-          <div class="marker-name">NR 1</div>
-          <div class="object-name">Fish</div>
-        </div>
-        <div class="marker-card">
-          <div class="marker-name">NR 2</div>
-          <div class="object-name">Bus</div>
-        </div>
-      </div>
+      <!-- Automatisch gevulde objectenlijst -->
+      <div id="model-list"></div>
  
       <div class="bracket-box">
         <span class="br-tl"></span><span class="br-tr"></span>
         <span class="br-bl"></span><span class="br-br"></span>
         <div class="instruction">
           <strong>STAP 01</strong> — Zorg voor goede belichting<br>
-          <strong>STAP 02</strong> — Print de markers af (zie links onder)<br>
-          <strong>STAP 03</strong> — Richt camera op een marker<br>
-          <strong>STAP 04</strong> — Het 3D-object verschijnt
+          <strong>STAP 02</strong> — Richt camera op de barcode<br>
+          <strong>STAP 03</strong> — Het 3D-object verschijnt
         </div>
       </div>
  
-      <button class="cta-btn" onclick="startAR()">
+      <button class="cta-btn" id="start-btn" onclick="startAR()" disabled>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
         </svg>
         <span>START AR</span>
       </button>
  
-      <div class="status">SYSTEEM GEREED — CAMERA VEREIST</div>
+      <div class="status" id="status-text">MODELLEN WORDEN GELADEN...</div>
     </div>
   </div>
  
-  <!-- ===== AR SCENE ===== -->
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen">
+    <div class="loader-ring"></div>
+    <div class="loader-text">CAMERA INITIALISEREN</div>
+    <div class="loader-sub">even geduld...</div>
+  </div>
+ 
+  <!-- AR SCENE — wordt dynamisch gevuld door JavaScript -->
   <div id="ar-scene">
     <a-scene
+      id="ar-scene-el"
       embedded
       arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
     >
-      <a-assets>
-        <a-asset-item id="screw"    src="Screw.glb"></a-asset-item>
-        <a-asset-item id="hand"     src="Hand.glb"></a-asset-item>
-        <a-asset-item id="camera"   src="Panasonic GH4-ply.glb"></a-asset-item>
-        <a-asset-item id="fish"     src="Fish.glb"></a-asset-item>
-        <a-asset-item id="bus"      src="bus_ply.glb"></a-asset-item>
-      </a-assets>
- 
-      <!-- Object 1: Screw → Hiro marker -->
-      <a-marker preset="hiro" id="marker-screw">
-        <a-entity
-          gltf-model="#screw"
-          scale="0.5 0.5 0.5"
-          position="0 0 0"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
-        ></a-entity>
-      </a-marker>
- 
-      <!-- Object 2: Hand → Kanji marker -->
-      <a-marker preset="kanji" id="marker-hand">
-        <a-entity
-          gltf-model="#hand"
-          scale="0.5 0.5 0.5"
-          position="0 0 0"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
-        ></a-entity>
-      </a-marker>
- 
-      <!-- Object 3: Panasonic GH4 → Barcode marker 0 -->
-      <a-marker type="barcode" value="0" id="marker-camera">
-        <a-entity
-          gltf-model="#camera"
-          scale="0.5 0.5 0.5"
-          position="0 0 0"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
-        ></a-entity>
-      </a-marker>
- 
-      <!-- Object 4: Fish → Barcode marker 1 -->
-      <a-marker type="barcode" value="1" id="marker-fish">
-        <a-entity
-          gltf-model="#fish"
-          scale="0.5 0.5 0.5"
-          position="0 0 0"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
-        ></a-entity>
-      </a-marker>
- 
-      <!-- Object 5: Bus → Barcode marker 2 -->
-      <a-marker type="barcode" value="2" id="marker-bus">
-        <a-entity
-          gltf-model="#bus"
-          scale="0.5 0.5 0.5"
-          position="0 0 0"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
-        ></a-entity>
-      </a-marker>
- 
+      <a-assets id="ar-assets" timeout="60000"></a-assets>
+      <!-- Markers en objecten worden hier dynamisch ingevoegd -->
       <a-entity camera></a-entity>
     </a-scene>
  
-    <!-- HUD overlay -->
     <div id="ar-ui">
       <div class="hud-corner hud-tl"></div>
       <div class="hud-corner hud-tr"></div>
@@ -411,11 +350,10 @@
       </div>
  
       <div id="active-label">— GEEN MARKER GEVONDEN —</div>
- 
       <div class="scan-beam"></div>
  
       <div class="ar-bottombar">
-        <div class="ar-hint">Richt op een <strong>MARKER</strong> om het object te zien</div>
+        <div class="ar-hint">Richt op een <strong>BARCODE</strong> om het object te zien</div>
       </div>
  
       <button class="back-btn" onclick="stopAR()">← TERUG</button>
@@ -423,26 +361,77 @@
   </div>
  
   <script>
-    // Marker → objectnaam mapping
-    const markerLabels = {
-      'marker-screw':  'SCREW',
-      'marker-hand':   'HAND',
-      'marker-camera': 'PANASONIC GH4',
-      'marker-fish':   'FISH',
-      'marker-bus':    'BUS'
-    };
+    let models = [];
+    let arReady = false;
  
-    function startAR() {
-      document.getElementById('landing').style.display = 'none';
-      document.getElementById('ar-scene').classList.add('active');
+    // Laad models.json bij opstarten
+    async function loadModels() {
+      try {
+        const res = await fetch('models.json?nocache=' + Date.now());
+        models = await res.json();
+        setupLanding();
+        setupARScene();
+      } catch (e) {
+        document.getElementById('status-text').textContent = 'FOUT: models.json niet gevonden';
+      }
+    }
  
-      // Voeg marker events toe voor label
-      Object.keys(markerLabels).forEach(id => {
-        const marker = document.getElementById(id);
-        if (!marker) return;
+    // Vul de landingspagina in met de objectenlijst
+    function setupLanding() {
+      const list = document.getElementById('model-list');
+      const count = document.getElementById('model-count');
+      const btn = document.getElementById('start-btn');
+      const status = document.getElementById('status-text');
+ 
+      count.textContent = models.length + ' OBJECTEN GELADEN';
+ 
+      list.innerHTML = models.map((name, i) => {
+        const cleanName = name.replace('.glb', '').replace(/-ply/g, '').replace(/_ply/g, '');
+        return `<div class="model-item">
+          <span class="model-barcode">BARCODE ${i}</span>
+          <span class="model-name">${cleanName}</span>
+        </div>`;
+      }).join('');
+ 
+      btn.disabled = false;
+      status.textContent = 'SYSTEEM GEREED — CAMERA VEREIST';
+    }
+ 
+    // Bouw de AR scene dynamisch op
+    function setupARScene() {
+      const assets = document.getElementById('ar-assets');
+      const scene = document.getElementById('ar-scene-el');
+ 
+      models.forEach((name, i) => {
+        // Asset item
+        const asset = document.createElement('a-asset-item');
+        asset.setAttribute('id', 'model-' + i);
+        asset.setAttribute('src', name);
+        assets.appendChild(asset);
+ 
+        // Marker + entity
+        const marker = document.createElement('a-marker');
+        marker.setAttribute('type', 'barcode');
+        marker.setAttribute('value', String(i));
+        marker.setAttribute('id', 'marker-' + i);
+ 
+        const entity = document.createElement('a-entity');
+        entity.setAttribute('gltf-model', '#model-' + i);
+        entity.setAttribute('scale', '0.5 0.5 0.5');
+        entity.setAttribute('position', '0 0 0');
+        entity.setAttribute('animation', 'property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear');
+ 
+        marker.appendChild(entity);
+ 
+        // Voeg marker toe vóór de camera entity
+        const camera = scene.querySelector('a-entity[camera]');
+        scene.insertBefore(marker, camera);
+ 
+        // Marker events voor HUD label
+        const cleanName = name.replace('.glb', '').replace(/-ply/g, '').replace(/_ply/g, '');
         marker.addEventListener('markerFound', () => {
           const label = document.getElementById('active-label');
-          label.textContent = '▸ ' + markerLabels[id] + ' GEVONDEN';
+          label.textContent = '▸ BARCODE ' + i + ' — ' + cleanName.toUpperCase();
           label.classList.add('visible');
         });
         marker.addEventListener('markerLost', () => {
@@ -451,12 +440,28 @@
           label.classList.remove('visible');
         });
       });
+ 
+      arReady = true;
+    }
+ 
+    function startAR() {
+      if (!arReady) return;
+      document.getElementById('landing').style.display = 'none';
+      document.getElementById('loading-screen').classList.add('active');
+ 
+      setTimeout(() => {
+        document.getElementById('loading-screen').classList.remove('active');
+        document.getElementById('ar-scene').classList.add('active');
+      }, 1500);
     }
  
     function stopAR() {
       document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
     }
+ 
+    // Start alles op
+    loadModels();
   </script>
  
 </body>
