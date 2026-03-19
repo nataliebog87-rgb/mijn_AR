@@ -4,10 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AR Experience</title>
-  <meta name="mobile-web-app-capable" content="yes" />
+ 
+  <!-- iPhone Safari vereisten -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
  
   <!-- MindAR + A-Frame -->
+  <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
  
   <!-- Font -->
@@ -25,6 +29,9 @@
  
     * { margin: 0; padding: 0; box-sizing: border-box; }
  
+    body { background: var(--bg); }
+ 
+    /* ===== LANDING ===== */
     #landing {
       position: fixed;
       inset: 0;
@@ -57,8 +64,7 @@
     #landing::after {
       content: '';
       position: absolute;
-      width: 600px;
-      height: 600px;
+      width: 600px; height: 600px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%);
       animation: pulse 4s ease-in-out infinite;
@@ -78,8 +84,7 @@
     }
  
     .scan-line {
-      width: 200px;
-      height: 2px;
+      width: 200px; height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
       margin: 0 auto 2rem;
       animation: scanPulse 2s ease-in-out infinite;
@@ -91,54 +96,37 @@
     }
  
     .label {
-      font-size: 0.7rem;
-      letter-spacing: 0.4em;
-      color: var(--cyan);
-      margin-bottom: 1rem;
-      opacity: 0;
+      font-size: 0.7rem; letter-spacing: 0.4em; color: var(--cyan);
+      margin-bottom: 1rem; opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.2s;
     }
  
     .title {
       font-family: 'Orbitron', monospace;
       font-size: clamp(2.5rem, 8vw, 4.5rem);
-      font-weight: 900;
-      color: white;
-      line-height: 1;
-      margin-bottom: 0.5rem;
-      opacity: 0;
+      font-weight: 900; color: white; line-height: 1;
+      margin-bottom: 0.5rem; opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.4s;
     }
  
     .title span { color: var(--cyan); text-shadow: 0 0 30px var(--cyan); }
  
     .subtitle {
-      font-size: 0.85rem;
-      color: var(--text);
-      letter-spacing: 0.15em;
-      margin-bottom: 3rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.6s;
+      font-size: 0.85rem; color: var(--text);
+      letter-spacing: 0.15em; margin-bottom: 3rem;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s;
     }
  
     .bracket-box {
-      position: relative;
-      display: inline-block;
-      padding: 2rem 2.5rem;
-      margin-bottom: 2.5rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.8s;
+      position: relative; display: inline-block;
+      padding: 2rem 2.5rem; margin-bottom: 2.5rem;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s;
     }
  
-    .bracket-box .br-tl,
-    .bracket-box .br-tr,
-    .bracket-box .br-bl,
-    .bracket-box .br-br {
-      position: absolute;
-      width: 16px;
-      height: 16px;
-      border-color: var(--cyan);
-      border-style: solid;
+    .bracket-box .br-tl, .bracket-box .br-tr,
+    .bracket-box .br-bl, .bracket-box .br-br {
+      position: absolute; width: 16px; height: 16px;
+      border-color: var(--cyan); border-style: solid;
     }
  
     .bracket-box .br-tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
@@ -146,95 +134,101 @@
     .bracket-box .br-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
     .bracket-box .br-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
  
-    .instruction {
-      font-size: 0.8rem;
-      color: var(--text);
-      line-height: 2;
-      letter-spacing: 0.05em;
-    }
- 
+    .instruction { font-size: 0.8rem; color: var(--text); line-height: 2; letter-spacing: 0.05em; }
     .instruction strong { color: var(--cyan); }
  
     .cta-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 2.5rem;
-      background: transparent;
-      border: 1px solid var(--cyan);
-      color: var(--cyan);
-      font-family: 'Orbitron', monospace;
-      font-size: 0.8rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 1s;
-      text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      padding: 1rem 2.5rem; background: transparent;
+      border: 1px solid var(--cyan); color: var(--cyan);
+      font-family: 'Orbitron', monospace; font-size: 0.8rem;
+      font-weight: 700; letter-spacing: 0.2em; cursor: pointer;
+      position: relative; overflow: hidden; transition: all 0.3s ease;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 1s;
+      text-transform: uppercase; -webkit-appearance: none;
     }
  
     .cta-btn::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: var(--cyan-dim);
-      transform: translateX(-100%);
+      content: ''; position: absolute; inset: 0;
+      background: var(--cyan-dim); transform: translateX(-100%);
       transition: transform 0.3s ease;
     }
  
-    .cta-btn:hover::before { transform: translateX(0); }
-    .cta-btn:hover { box-shadow: 0 0 30px rgba(0,245,255,0.3); }
+    .cta-btn:hover::before, .cta-btn:active::before { transform: translateX(0); }
     .cta-btn span { position: relative; z-index: 1; }
  
     .status {
-      margin-top: 1.5rem;
-      font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      color: rgba(0,245,255,0.5);
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 1.2s;
+      margin-top: 1.5rem; font-size: 0.65rem;
+      letter-spacing: 0.2em; color: rgba(0,245,255,0.5);
+      opacity: 0; animation: fadeUp 0.8s ease forwards 1.2s;
     }
  
-    .status::before {
-      content: '● ';
-      color: #00ff88;
-      animation: blink 1.5s step-end infinite;
-    }
+    .status::before { content: '● '; color: #00ff88; animation: blink 1.5s step-end infinite; }
  
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
- 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
  
+    /* ===== LOADING SCREEN ===== */
+    #loading-screen {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 2000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Share Tech Mono', monospace;
+    }
+ 
+    #loading-screen.active { display: flex; }
+ 
+    .loader-ring {
+      width: 60px; height: 60px;
+      border: 2px solid rgba(0,245,255,0.2);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1.5rem;
+    }
+ 
+    @keyframes spin { to { transform: rotate(360deg); } }
+ 
+    .loader-text {
+      font-size: 0.7rem; letter-spacing: 0.3em;
+      color: var(--cyan); margin-bottom: 0.5rem;
+    }
+ 
+    .loader-sub { font-size: 0.6rem; color: rgba(0,245,255,0.4); letter-spacing: 0.15em; }
+ 
+    /* ===== AR SCENE ===== */
     #ar-container {
       display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 500;
+      position: fixed; inset: 0; z-index: 500;
     }
  
     #ar-container.active { display: block; }
  
+    /* Zorg dat A-Frame canvas volledig scherm vult op iPhone */
+    #ar-container canvas,
+    #ar-container video {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+ 
+    /* ===== AR HUD ===== */
     #ar-ui {
-      position: fixed;
-      inset: 0;
-      z-index: 600;
+      position: fixed; inset: 0; z-index: 600;
       pointer-events: none;
       font-family: 'Share Tech Mono', monospace;
     }
  
     .hud-corner {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      border-color: var(--cyan);
-      border-style: solid;
-      opacity: 0.6;
+      position: absolute; width: 40px; height: 40px;
+      border-color: var(--cyan); border-style: solid; opacity: 0.6;
     }
  
     .hud-tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
@@ -243,46 +237,33 @@
     .hud-br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
  
     .ar-topbar {
-      position: absolute;
-      top: 0; left: 0; right: 0;
+      position: absolute; top: 0; left: 0; right: 0;
       padding: 1rem 4rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      display: flex; justify-content: space-between; align-items: center;
       background: linear-gradient(180deg, rgba(2,8,16,0.8) 0%, transparent 100%);
     }
  
     .ar-title {
-      font-family: 'Orbitron', monospace;
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--cyan);
-      letter-spacing: 0.2em;
+      font-family: 'Orbitron', monospace; font-size: 0.75rem;
+      font-weight: 700; color: var(--cyan); letter-spacing: 0.2em;
     }
  
     .ar-status { font-size: 0.6rem; color: rgba(0,245,255,0.6); letter-spacing: 0.15em; }
  
     .ar-bottombar {
-      position: absolute;
-      bottom: 0; left: 0; right: 0;
-      padding: 1.5rem 4rem;
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 1.5rem 2rem;
       background: linear-gradient(0deg, rgba(2,8,16,0.9) 0%, transparent 100%);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
     }
  
-    .ar-hint { font-size: 0.7rem; color: var(--text); letter-spacing: 0.15em; text-align: center; }
+    .ar-hint { font-size: 0.7rem; color: var(--text); letter-spacing: 0.1em; text-align: center; }
     .ar-hint strong { color: var(--cyan); }
  
     .scan-beam {
-      position: absolute;
-      left: 0; right: 0;
-      height: 2px;
+      position: absolute; left: 0; right: 0; height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-      opacity: 0.4;
-      animation: scanBeam 3s ease-in-out infinite;
+      opacity: 0.4; animation: scanBeam 3s ease-in-out infinite;
     }
  
     @keyframes scanBeam {
@@ -293,23 +274,18 @@
     }
  
     .back-btn {
-      position: absolute;
-      bottom: 5rem;
-      left: 50%;
+      position: absolute; bottom: 5rem; left: 50%;
       transform: translateX(-50%);
-      padding: 0.6rem 1.5rem;
-      background: rgba(2,8,16,0.8);
-      border: 1px solid var(--cyan-border);
-      color: var(--cyan);
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.7rem;
-      letter-spacing: 0.15em;
-      cursor: pointer;
-      pointer-events: all;
-      transition: all 0.3s;
+      padding: 0.75rem 2rem;
+      background: rgba(2,8,16,0.85);
+      border: 1px solid var(--cyan-border); color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      letter-spacing: 0.15em; cursor: pointer;
+      pointer-events: all; transition: all 0.3s;
+      -webkit-appearance: none; border-radius: 0;
     }
  
-    .back-btn:hover { background: var(--cyan-dim); }
+    .back-btn:active { background: var(--cyan-dim); }
   </style>
 </head>
  
@@ -324,10 +300,8 @@
       <p class="subtitle">SCAN · DISCOVER · INTERACT</p>
  
       <div class="bracket-box">
-        <span class="br-tl"></span>
-        <span class="br-tr"></span>
-        <span class="br-bl"></span>
-        <span class="br-br"></span>
+        <span class="br-tl"></span><span class="br-tr"></span>
+        <span class="br-bl"></span><span class="br-br"></span>
         <div class="instruction">
           <strong>STAP 01</strong> — Zorg voor goede belichting<br>
           <strong>STAP 02</strong> — Richt camera op de doelafbeelding<br>
@@ -347,23 +321,31 @@
     </div>
   </div>
  
-  <!-- AR SCENE -->
+  <!-- LOADING SCREEN -->
+  <div id="loading-screen">
+    <div class="loader-ring"></div>
+    <div class="loader-text">CAMERA INITIALISEREN</div>
+    <div class="loader-sub">even geduld...</div>
+  </div>
+ 
+  <!-- AR SCENE — altijd in DOM, pas zichtbaar na start -->
   <div id="ar-container">
     <a-scene
-      mindar-image="imageTargetSrc: targets.mind; autoStart: false;"
+      mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;"
       color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights"
+      renderer="colorManagement: true; physicallyCorrectLights: true;"
       vr-mode-ui="enabled: false"
       device-orientation-permission-ui="enabled: false"
+      loading-screen="enabled: false"
     >
-      <a-assets>
+      <a-assets timeout="30000">
         <!-- ⚠️ Verander 'Screw.glb' naar jouw bestandsnaam -->
         <a-asset-item id="mijnmodel" src="Screw.glb"></a-asset-item>
       </a-assets>
  
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
  
-      <!-- targetIndex: 0 = eerste afbeelding in targets.mind -->
+      <!-- targetIndex: 0 = jouw afbeelding in targets.mind -->
       <a-entity mindar-image-target="targetIndex: 0">
         <a-entity
           gltf-model="#mijnmodel"
@@ -375,7 +357,7 @@
  
     </a-scene>
  
-    <!-- HUD overlay -->
+    <!-- HUD -->
     <div id="ar-ui">
       <div class="hud-corner hud-tl"></div>
       <div class="hud-corner hud-tr"></div>
@@ -401,18 +383,39 @@
     let arStarted = false;
  
     function startAR() {
+      // Toon laadscherm
       document.getElementById('landing').style.display = 'none';
-      document.getElementById('ar-container').classList.add('active');
+      document.getElementById('loading-screen').classList.add('active');
+ 
+      const scene = document.querySelector('a-scene');
+ 
+      const doStart = () => {
+        const mindar = scene.systems['mindar-image-system'];
+        if (mindar) {
+          mindar.start();
+          // Wacht even tot camera stream klaar is, dan laadscherm weg
+          setTimeout(() => {
+            document.getElementById('loading-screen').classList.remove('active');
+            document.getElementById('ar-container').classList.add('active');
+          }, 2000);
+        }
+      };
  
       if (!arStarted) {
         arStarted = true;
-        const scene = document.querySelector('a-scene');
-        const tryStart = () => {
-          const mindar = scene.systems['mindar-image-system'];
-          if (mindar) mindar.start();
-        };
-        if (scene.hasLoaded) { tryStart(); }
-        else { scene.addEventListener('loaded', tryStart); }
+        if (scene.hasLoaded) {
+          doStart();
+        } else {
+          scene.addEventListener('loaded', doStart, { once: true });
+        }
+      } else {
+        // Al eerder gestart, gewoon tonen
+        const mindar = scene.systems['mindar-image-system'];
+        if (mindar) mindar.start();
+        setTimeout(() => {
+          document.getElementById('loading-screen').classList.remove('active');
+          document.getElementById('ar-container').classList.add('active');
+        }, 1000);
       }
     }
  
