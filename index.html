@@ -4,17 +4,13 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>AR Experience</title>
- 
-  <!-- iPhone Safari vereisten -->
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="mobile-web-app-capable" content="yes" />
  
-  <!-- MindAR + A-Frame -->
-  <script src="https://cdn.jsdelivr.net/npm/aframe@1.4.2/dist/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
+  <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
  
-  <!-- Font -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
  
   <style>
@@ -28,27 +24,19 @@
     }
  
     * { margin: 0; padding: 0; box-sizing: border-box; }
- 
     body { background: var(--bg); }
  
     /* ===== LANDING ===== */
     #landing {
-      position: fixed;
-      inset: 0;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      overflow: hidden;
+      position: fixed; inset: 0; background: var(--bg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 1000; overflow: hidden;
       font-family: 'Share Tech Mono', monospace;
     }
  
     #landing::before {
-      content: '';
-      position: absolute;
-      inset: -50%;
+      content: ''; position: absolute; inset: -50%;
       background-image:
         linear-gradient(var(--grid) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid) 1px, transparent 1px);
@@ -62,10 +50,8 @@
     }
  
     #landing::after {
-      content: '';
-      position: absolute;
-      width: 600px; height: 600px;
-      border-radius: 50%;
+      content: ''; position: absolute;
+      width: 600px; height: 600px; border-radius: 50%;
       background: radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%);
       animation: pulse 4s ease-in-out infinite;
     }
@@ -76,11 +62,8 @@
     }
  
     .landing-content {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      padding: 2rem;
-      max-width: 600px;
+      position: relative; z-index: 2;
+      text-align: center; padding: 2rem; max-width: 640px;
     }
  
     .scan-line {
@@ -113,13 +96,45 @@
  
     .subtitle {
       font-size: 0.85rem; color: var(--text);
-      letter-spacing: 0.15em; margin-bottom: 3rem;
+      letter-spacing: 0.15em; margin-bottom: 2rem;
       opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s;
+    }
+ 
+    /* Marker overzicht tabel */
+    .marker-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.7s;
+    }
+ 
+    .marker-card {
+      border: 1px solid var(--cyan-border);
+      padding: 0.6rem 0.3rem;
+      text-align: center;
+      font-size: 0.55rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+    }
+ 
+    .marker-card .marker-name {
+      font-family: 'Orbitron', monospace;
+      font-size: 0.5rem;
+      color: var(--cyan);
+      margin-bottom: 0.3rem;
+      letter-spacing: 0.1em;
+    }
+ 
+    .marker-card .object-name {
+      color: white;
+      font-size: 0.55rem;
     }
  
     .bracket-box {
       position: relative; display: inline-block;
-      padding: 2rem 2.5rem; margin-bottom: 2.5rem;
+      padding: 1.5rem 2rem; margin-bottom: 2rem;
       opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s;
     }
  
@@ -134,7 +149,7 @@
     .bracket-box .br-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
     .bracket-box .br-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
  
-    .instruction { font-size: 0.8rem; color: var(--text); line-height: 2; letter-spacing: 0.05em; }
+    .instruction { font-size: 0.75rem; color: var(--text); line-height: 2; letter-spacing: 0.05em; }
     .instruction strong { color: var(--cyan); }
  
     .cta-btn {
@@ -154,7 +169,7 @@
       transition: transform 0.3s ease;
     }
  
-    .cta-btn:hover::before, .cta-btn:active::before { transform: translateX(0); }
+    .cta-btn:active::before { transform: translateX(0); }
     .cta-btn span { position: relative; z-index: 1; }
  
     .status {
@@ -171,53 +186,9 @@
       to { opacity: 1; transform: translateY(0); }
     }
  
-    /* ===== LOADING SCREEN ===== */
-    #loading-screen {
-      display: none;
-      position: fixed; inset: 0;
-      background: var(--bg);
-      z-index: 2000;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Share Tech Mono', monospace;
-    }
- 
-    #loading-screen.active { display: flex; }
- 
-    .loader-ring {
-      width: 60px; height: 60px;
-      border: 2px solid rgba(0,245,255,0.2);
-      border-top-color: var(--cyan);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 1.5rem;
-    }
- 
-    @keyframes spin { to { transform: rotate(360deg); } }
- 
-    .loader-text {
-      font-size: 0.7rem; letter-spacing: 0.3em;
-      color: var(--cyan); margin-bottom: 0.5rem;
-    }
- 
-    .loader-sub { font-size: 0.6rem; color: rgba(0,245,255,0.4); letter-spacing: 0.15em; }
- 
     /* ===== AR SCENE ===== */
-    #ar-container {
-      display: none;
-      position: fixed; inset: 0; z-index: 500;
-    }
- 
-    #ar-container.active { display: block; }
- 
-    /* Zorg dat A-Frame canvas volledig scherm vult op iPhone */
-    #ar-container canvas,
-    #ar-container video {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover !important;
-    }
+    #ar-scene { display: none; position: fixed; inset: 0; z-index: 500; }
+    #ar-scene.active { display: block; }
  
     /* ===== AR HUD ===== */
     #ar-ui {
@@ -249,6 +220,21 @@
     }
  
     .ar-status { font-size: 0.6rem; color: rgba(0,245,255,0.6); letter-spacing: 0.15em; }
+ 
+    /* Actief object label */
+    #active-label {
+      position: absolute; top: 60px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(2,8,16,0.8);
+      border: 1px solid var(--cyan-border);
+      color: var(--cyan);
+      font-size: 0.65rem; letter-spacing: 0.2em;
+      padding: 0.3rem 1rem;
+      opacity: 0; transition: opacity 0.3s;
+      white-space: nowrap;
+    }
+ 
+    #active-label.visible { opacity: 1; }
  
     .ar-bottombar {
       position: absolute; bottom: 0; left: 0; right: 0;
@@ -291,21 +277,45 @@
  
 <body>
  
-  <!-- LANDING PAGE -->
+  <!-- ===== LANDING PAGE ===== -->
   <div id="landing">
     <div class="landing-content">
       <div class="scan-line"></div>
       <div class="label">// AUGMENTED REALITY EXPERIENCE</div>
       <h1 class="title">AR<span>_</span>VIEW</h1>
-      <p class="subtitle">SCAN · DISCOVER · INTERACT</p>
+      <p class="subtitle">5 OBJECTEN — 5 MARKERS</p>
+ 
+      <!-- Marker overzicht -->
+      <div class="marker-grid">
+        <div class="marker-card">
+          <div class="marker-name">HIRO</div>
+          <div class="object-name">Screw</div>
+        </div>
+        <div class="marker-card">
+          <div class="marker-name">KANJI</div>
+          <div class="object-name">Hand</div>
+        </div>
+        <div class="marker-card">
+          <div class="marker-name">NR 0</div>
+          <div class="object-name">GH4</div>
+        </div>
+        <div class="marker-card">
+          <div class="marker-name">NR 1</div>
+          <div class="object-name">Fish</div>
+        </div>
+        <div class="marker-card">
+          <div class="marker-name">NR 2</div>
+          <div class="object-name">Bus</div>
+        </div>
+      </div>
  
       <div class="bracket-box">
         <span class="br-tl"></span><span class="br-tr"></span>
         <span class="br-bl"></span><span class="br-br"></span>
         <div class="instruction">
           <strong>STAP 01</strong> — Zorg voor goede belichting<br>
-          <strong>STAP 02</strong> — Richt camera op de doelafbeelding<br>
-          <strong>STAP 03</strong> — Houd de camera stil<br>
+          <strong>STAP 02</strong> — Print de markers af (zie links onder)<br>
+          <strong>STAP 03</strong> — Richt camera op een marker<br>
           <strong>STAP 04</strong> — Het 3D-object verschijnt
         </div>
       </div>
@@ -321,43 +331,74 @@
     </div>
   </div>
  
-  <!-- LOADING SCREEN -->
-  <div id="loading-screen">
-    <div class="loader-ring"></div>
-    <div class="loader-text">CAMERA INITIALISEREN</div>
-    <div class="loader-sub">even geduld...</div>
-  </div>
- 
-  <!-- AR SCENE — altijd in DOM, pas zichtbaar na start -->
-  <div id="ar-container">
+  <!-- ===== AR SCENE ===== -->
+  <div id="ar-scene">
     <a-scene
-      mindar-image="imageTargetSrc: targets.mind; autoStart: false; uiLoading: no; uiError: no; uiScanning: no;"
-      color-space="sRGB"
-      renderer="colorManagement: true; physicallyCorrectLights: true;"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      loading-screen="enabled: false"
+      embedded
+      arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
     >
-      <a-assets timeout="30000">
-        <!-- ⚠️ Verander 'Screw.glb' naar jouw bestandsnaam -->
-        <a-asset-item id="mijnmodel" src="Screw.glb"></a-asset-item>
+      <a-assets>
+        <a-asset-item id="screw"    src="Screw.glb"></a-asset-item>
+        <a-asset-item id="hand"     src="Hand.glb"></a-asset-item>
+        <a-asset-item id="camera"   src="Panasonic GH4-ply.glb"></a-asset-item>
+        <a-asset-item id="fish"     src="Fish.glb"></a-asset-item>
+        <a-asset-item id="bus"      src="bus_ply.glb"></a-asset-item>
       </a-assets>
  
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
- 
-      <!-- targetIndex: 0 = jouw afbeelding in targets.mind -->
-      <a-entity mindar-image-target="targetIndex: 0">
+      <!-- Object 1: Screw → Hiro marker -->
+      <a-marker preset="hiro" id="marker-screw">
         <a-entity
-          gltf-model="#mijnmodel"
+          gltf-model="#screw"
           scale="0.5 0.5 0.5"
           position="0 0 0"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 8000; easing: linear"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
         ></a-entity>
-      </a-entity>
+      </a-marker>
  
+      <!-- Object 2: Hand → Kanji marker -->
+      <a-marker preset="kanji" id="marker-hand">
+        <a-entity
+          gltf-model="#hand"
+          scale="0.5 0.5 0.5"
+          position="0 0 0"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
+        ></a-entity>
+      </a-marker>
+ 
+      <!-- Object 3: Panasonic GH4 → Barcode marker 0 -->
+      <a-marker type="barcode" value="0" id="marker-camera">
+        <a-entity
+          gltf-model="#camera"
+          scale="0.5 0.5 0.5"
+          position="0 0 0"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
+        ></a-entity>
+      </a-marker>
+ 
+      <!-- Object 4: Fish → Barcode marker 1 -->
+      <a-marker type="barcode" value="1" id="marker-fish">
+        <a-entity
+          gltf-model="#fish"
+          scale="0.5 0.5 0.5"
+          position="0 0 0"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
+        ></a-entity>
+      </a-marker>
+ 
+      <!-- Object 5: Bus → Barcode marker 2 -->
+      <a-marker type="barcode" value="2" id="marker-bus">
+        <a-entity
+          gltf-model="#bus"
+          scale="0.5 0.5 0.5"
+          position="0 0 0"
+          animation="property: rotation; to: 0 360 0; loop: true; dur: 6000; easing: linear"
+        ></a-entity>
+      </a-marker>
+ 
+      <a-entity camera></a-entity>
     </a-scene>
  
-    <!-- HUD -->
+    <!-- HUD overlay -->
     <div id="ar-ui">
       <div class="hud-corner hud-tl"></div>
       <div class="hud-corner hud-tr"></div>
@@ -369,10 +410,12 @@
         <div class="ar-status">CAMERA ACTIEF ●</div>
       </div>
  
+      <div id="active-label">— GEEN MARKER GEVONDEN —</div>
+ 
       <div class="scan-beam"></div>
  
       <div class="ar-bottombar">
-        <div class="ar-hint">Richt op je <strong>DOELAFBEELDING</strong> om het object te zien</div>
+        <div class="ar-hint">Richt op een <strong>MARKER</strong> om het object te zien</div>
       </div>
  
       <button class="back-btn" onclick="stopAR()">← TERUG</button>
@@ -380,51 +423,39 @@
   </div>
  
   <script>
-    let arStarted = false;
+    // Marker → objectnaam mapping
+    const markerLabels = {
+      'marker-screw':  'SCREW',
+      'marker-hand':   'HAND',
+      'marker-camera': 'PANASONIC GH4',
+      'marker-fish':   'FISH',
+      'marker-bus':    'BUS'
+    };
  
     function startAR() {
-      // Toon laadscherm
       document.getElementById('landing').style.display = 'none';
-      document.getElementById('loading-screen').classList.add('active');
+      document.getElementById('ar-scene').classList.add('active');
  
-      const scene = document.querySelector('a-scene');
- 
-      const doStart = () => {
-        const mindar = scene.systems['mindar-image-system'];
-        if (mindar) {
-          mindar.start();
-          // Wacht even tot camera stream klaar is, dan laadscherm weg
-          setTimeout(() => {
-            document.getElementById('loading-screen').classList.remove('active');
-            document.getElementById('ar-container').classList.add('active');
-          }, 2000);
-        }
-      };
- 
-      if (!arStarted) {
-        arStarted = true;
-        if (scene.hasLoaded) {
-          doStart();
-        } else {
-          scene.addEventListener('loaded', doStart, { once: true });
-        }
-      } else {
-        // Al eerder gestart, gewoon tonen
-        const mindar = scene.systems['mindar-image-system'];
-        if (mindar) mindar.start();
-        setTimeout(() => {
-          document.getElementById('loading-screen').classList.remove('active');
-          document.getElementById('ar-container').classList.add('active');
-        }, 1000);
-      }
+      // Voeg marker events toe voor label
+      Object.keys(markerLabels).forEach(id => {
+        const marker = document.getElementById(id);
+        if (!marker) return;
+        marker.addEventListener('markerFound', () => {
+          const label = document.getElementById('active-label');
+          label.textContent = '▸ ' + markerLabels[id] + ' GEVONDEN';
+          label.classList.add('visible');
+        });
+        marker.addEventListener('markerLost', () => {
+          const label = document.getElementById('active-label');
+          label.textContent = '— GEEN MARKER GEVONDEN —';
+          label.classList.remove('visible');
+        });
+      });
     }
  
     function stopAR() {
-      document.getElementById('ar-container').classList.remove('active');
+      document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
-      const scene = document.querySelector('a-scene');
-      const mindar = scene.systems['mindar-image-system'];
-      if (mindar) mindar.pause();
     }
   </script>
  
