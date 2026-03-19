@@ -1,0 +1,223 @@
+using UnityEngine;
+using UnityEngine.XR.ARFoundation;
+using UnityEngine.XR.ARSubsystems;
+using System.Collections.Generic;
+
+public class ARObjectPlacer : MonoBehaviour
+{
+    [Header("AR")]
+    [SerializeField] private ARRaycastManager raycastManager;
+
+    [Header("Objecten")]
+    [SerializeField] private GameObject[] objectPrefabs;
+
+    [Header("UI")]
+    [SerializeField] private GameObject deleteButton;
+
+    // Interne state
+    private List<ARRaycastHit> hits      = new List<ARRaycastHit>();
+    private List<GameObject>   geplaatst = new List<GameObject>();
+    private GameObject         geselecteerd;
+    private int                huidigIndex = 0;
+
+    // Schalen via pinch
+    private float beginAfstand;
+    private float beginSchaal;
+
+    // Swipe-detectie
+    private Vector2 swipeBegin;
+    private bool    isSwipe = false;
+    private const float MIN_SWIPE_AFSTAND  = 100f; // pixels
+    private const float MAX_SWIPE_TIJD     = 0.4f; // seconden
+    private float swipeBeginTijd;
+
+    // ─────────────────────────────────────────
+    //  Publieke methoden (koppel aan UI-knoppen)
+    // ─────────────────────────────────────────
+
+    /// <summary>Verwijdert het geselecteerde object uit de scene.</summary>
+    public void VerwijderGeselecteerde()
+    {
+        if (geselecteerd == null) return;
+
+        geplaatst.Remove(geselecteerd);
+        Destroy(geselecteerd);
+        GeselecteerdInstellen(null);
+    }
+
+    // ─────────────────────────────────────────
+    //  Unity lifecycle
+    // ─────────────────────────────────────────
+
+    void Update()
+    {
+        if (Input.touchCount == 0) return;
+
+        // ── 2 vingers: schalen ──
+        if (Input.touchCount == 2)
+        {
+            PinchSchalen();
+            return;
+        }
+
+        // ── 1 vinger ──
+        Touch touch = Input.GetTouch(0);
+
+        switch (touch.phase)
+        {
+            case TouchPhase.Began:
+                // Sla beginpunt op voor swipe-detectie
+                swipeBegin     = touch.position;
+                swipeBeginTijd = Time.time;
+                isSwipe        = false;
+                break;
+
+            case TouchPhase.Moved:
+                // Zodra de vinger ver genoeg beweegt, markeren als swipe
+                if (Vector2.Distance(touch.position, swipeBegin) > MIN_SWIPE_AFSTAND)
+                    isSwipe = true;
+                break;
+
+            case TouchPhase.Ended:
+                float swipeTijd = Time.time - swipeBeginTijd;
+
+                if (isSwipe && swipeTijd < MAX_SWIPE_TIJD)
+                {
+                    // ── Swipe afgehandeld: wissel prefab ──
+                    float deltaX = touch.position.x - swipeBegin.x;
+
+                    if (deltaX > 0)
+                        huidigIndex = (huidigIndex + 1) % objectPrefabs.Length;
+                    else
+                        huidigIndex = (huidigIndex - 1 + objectPrefabs.Length) % objectPrefabs.Length;
+
+                    DebugToonHuidigObject();
+                }
+                else if (!isSwipe)
+                {
+                    // ── Gewone tik: selecteren of nieuw object plaatsen ──
+                    if (!ProbeerSelecteren(touch.position))
+                    {
+                        if (raycastManager.Raycast(touch.position, hits, TrackableType.PlaneWithinPolygon))
+                        {
+                            PlaatsNieuwObject(hits[0].pose);
+                        }
+                    }
+                }
+                break;
+        }
+    }
+
+    // ─────────────────────────────────────────
+    //  Plaatsen
+    // ─────────────────────────────────────────
+
+    private void PlaatsNieuwObject(Pose pose)
+    {
+        GameObject nieuw = Instantiate(
+            objectPrefabs[huidigIndex],
+            pose.position,
+            pose.rotation
+        );
+        geplaatst.Add(nieuw);
+        GeselecteerdInstellen(nieuw);
+    }
+
+    // ─────────────────────────────────────────
+    //  Selecteren
+    // ─────────────────────────────────────────
+
+    private bool ProbeerSelecteren(Vector2 schermPositie)
+    {
+        Ray ray = Camera.main.ScreenPointToRay(schermPositie);
+
+        if (Physics.Raycast(ray, out RaycastHit hit))
+        {
+            GameObject root = GeefRoot(hit.collider.gameObject);
+            if (root != null)
+            {
+                GeselecteerdInstellen(root);
+                return true;
+            }
+        }
+
+        GeselecteerdInstellen(null);
+        return false;
+    }
+
+    private GameObject GeefRoot(GameObject kind)
+    {
+        Transform t = kind.transform;
+        while (t != null)
+        {
+            if (geplaatst.Contains(t.gameObject))
+                return t.gameObject;
+            t = t.parent;
+        }
+        return null;
+    }
+
+    private void GeselecteerdInstellen(GameObject obj)
+    {
+        if (geselecteerd != null)
+            ToggleHighlight(geselecteerd, false);
+
+        geselecteerd = obj;
+
+        if (geselecteerd != null)
+            ToggleHighlight(geselecteerd, true);
+
+        if (deleteButton != null)
+            deleteButton.SetActive(geselecteerd != null);
+    }
+
+    // ─────────────────────────────────────────
+    //  Schalen (pinch)
+    // ─────────────────────────────────────────
+
+    private void PinchSchalen()
+    {
+        if (geselecteerd == null) return;
+
+        Touch t0 = Input.GetTouch(0);
+        Touch t1 = Input.GetTouch(1);
+
+        if (t1.phase == TouchPhase.Began)
+        {
+            beginAfstand = Vector2.Distance(t0.position, t1.position);
+            beginSchaal  = geselecteerd.transform.localScale.x;
+            return;
+        }
+
+        float huidigeAfstand = Vector2.Distance(t0.position, t1.position);
+        if (beginAfstand == 0) return;
+
+        float factor      = huidigeAfstand / beginAfstand;
+        float nieuweSchaal = Mathf.Clamp(beginSchaal * factor, 0.05f, 10f);
+
+        geselecteerd.transform.localScale = Vector3.one * nieuweSchaal;
+    }
+
+    // ─────────────────────────────────────────
+    //  Highlight
+    // ─────────────────────────────────────────
+
+    private void ToggleHighlight(GameObject obj, bool aan)
+    {
+        foreach (Renderer r in obj.GetComponentsInChildren<Renderer>())
+        {
+            foreach (Material mat in r.materials)
+            {
+                mat.color = aan ? new Color(0.6f, 0.9f, 1f) : Color.white;
+            }
+        }
+    }
+
+    
+
+    private void DebugToonHuidigObject()
+    {
+        if (objectPrefabs[huidigIndex] != null)
+            Debug.Log($"Huidig object: {objectPrefabs[huidigIndex].name} (index {huidigIndex})");
+    }
+}
