@@ -658,18 +658,11 @@
         const res = await fetch('models.json?nocache=' + Date.now());
         models = await res.json();
         setupLanding();
-        //setupARScene();
-        const entity = document.createElement('a-entity');
-        entity.setAttribute('id', 'entity-' + i);
-        entity.setAttribute('geometry', 'primitive: box');
-        entity.setAttribute('material', 'color: red');
-        entity.setAttribute('position', '0 0.5 0');
-        entity.setAttribute('scale', '0.5 0.5 0.5');
-      } catch (e) {
-        document.getElementById('status-text').textContent = 'FOUT: MODELS.JSON NIET GEVONDEN';
-      }
-    }
- 
+        setupARScene();
+      } 
+
+
+
     function setupLanding() {
       const list = document.getElementById('model-list');
       const count = document.getElementById('model-count');
