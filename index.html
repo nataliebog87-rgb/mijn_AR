@@ -2,94 +2,84 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>AR Experience</title>
-
-  <!-- Mobiel fullscreen gedrag — niet aanpassen -->
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
- 
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
- 
+
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
   <style>
-
-    /* ============================================================
-       KLEURENPALET — hier pas je alle kleuren aan
-       Verander de waarden rechts van de dubbele punt.
-       Gebruik hex-codes (#rrggbb) of rgba(r,g,b,a) voor transparantie.
-    ============================================================ */
     :root {
-      --cyan: #00f5ff;                      /* Hoofdkleur: kleur van titels, knoppen, randen */
-      --cyan-dim: rgba(0, 245, 255, 0.15);  /* Lichte versie van hoofdkleur: hover-effect knop */
-      --cyan-border: rgba(0, 245, 255, 0.4);/* Randkleur van elementen */
-      --bg: #020810;                         /* Achtergrondkleur van de hele pagina */
-      --text: #c8e8ff;                       /* Kleur van gewone tekst (stappenlijst, subtitel) */
-      --grid: rgba(0, 245, 255, 0.04);       /* Kleur van de gridlijnen op de achtergrond (heel subtiel) */
+      --cyan: #00f5ff;
+      --cyan-dim: rgba(0, 245, 255, 0.15);
+      --cyan-border: rgba(0, 245, 255, 0.4);
+      --bg: #020810;
+      --text: #c8e8ff;
+      --grid: rgba(0, 245, 255, 0.04);
     }
 
-    /* ============================================================
-       BASIS — niet aanpassen
-       Zorgt voor correcte weergave op alle schermen.
-    ============================================================ */
     html, body {
       margin: 0; padding: 0;
       width: 100%; height: 100%;
       overflow: hidden;
-      -webkit-text-size-adjust: 100%; /* Voorkomt dat Android tekst automatisch vergroot */
+      -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
     }
- 
+
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); }
- 
+
     /* ===== LANDING ===== */
     #landing {
-      position: fixed; inset: 0;
-      background: var(--bg); /* Achtergrondkleur → zie --bg hierboven */
+      position: fixed; inset: 0; background: var(--bg);
       display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      z-index: 1000; overflow: hidden;
+      align-items: center; justify-content: flex-start;
+      z-index: 1000; overflow-y: auto; overflow-x: hidden;
       font-family: 'Share Tech Mono', monospace;
     }
- 
+
     #landing::before {
       content: ''; position: absolute; inset: -50%;
       background-image:
         linear-gradient(var(--grid) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-      background-size: 40px 40px; /* Grootte van de gridvakken — aanpasbaar (groter getal = grotere vakken) */
-      animation: gridMove 20s linear infinite; /* Snelheid van de beweging — aanpasbaar */
+      background-size: 40px 40px;
+      animation: gridMove 20s linear infinite;
     }
 
     @keyframes gridMove {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(40px); } /* Richting en afstand van beweging */
+      0% { transform: translateY(0); } 100% { transform: translateY(40px); }
     }
- 
+
     #landing::after {
       content: ''; position: absolute;
-      width: 600px; height: 600px; /* Grootte van de gloed — aanpasbaar */
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%); /* Kleur van de gloed — aanpasbaar */
-      animation: pulse 4s ease-in-out infinite; /* Pulseersnelheid — aanpasbaar */
+      width: 600px; height: 600px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
     }
 
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 0.6; }
       50% { transform: scale(1.2); opacity: 1; }
     }
- 
+
     .landing-content {
       position: relative; z-index: 2;
-      text-align: center; padding: 2rem; max-width: 640px; width: 100%;
+      text-align: center;
+      padding: max(2rem, env(safe-area-inset-top, 2rem)) 1.5rem max(2rem, env(safe-area-inset-bottom, 2rem));
+      max-width: 480px; width: 100%;
+      margin: auto;
+      min-height: 100%;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
- 
+
     .scan-line {
-      width: 200px; height: 2px; /* Hoogte van de lijn — aanpasbaar */
+      width: 200px; height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
       margin: 0 auto 2rem;
       animation: scanPulse 2s ease-in-out infinite;
@@ -97,65 +87,59 @@
 
     @keyframes scanPulse {
       0%, 100% { opacity: 0.4; width: 100px; }
-      50% { opacity: 1; width: 200px; } /* Maximale breedte tijdens animatie */
+      50% { opacity: 1; width: 200px; }
     }
- 
+
     .label {
-      font-size: 0.7rem;       /* Lettergrootte — aanpasbaar */
-      letter-spacing: 0.4em;   /* Spatiëring tussen letters — aanpasbaar */
-      color: var(--cyan);      /* Kleur → zie --cyan hierboven */
-      margin-bottom: 1rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.2s; /* Intrede-animatie — verander het getal voor vertraging */
+      font-size: 0.7rem; letter-spacing: 0.4em; color: var(--cyan);
+      margin-bottom: 1rem; opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.2s;
     }
- 
+
     .title {
       font-family: 'Orbitron', monospace;
-      font-size: clamp(2rem, 8vw, 4rem);
+      font-size: clamp(1.6rem, 7vw, 4rem);
       font-weight: 900; color: white; line-height: 1;
       margin-bottom: 0.5rem; opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.4s;
     }
- 
+
     .title span { color: var(--cyan); text-shadow: 0 0 30px var(--cyan); }
- 
+
     .subtitle {
-      font-size: 0.85rem;      /* Lettergrootte — aanpasbaar */
-      color: var(--text);      /* Kleur → zie --text hierboven */
-      letter-spacing: 0.15em;  /* Spatiëring — aanpasbaar */
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.6s;
+      font-size: 0.85rem; color: var(--text);
+      letter-spacing: 0.15em; margin-bottom: 1.5rem;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.6s;
     }
- 
+
     /* Model lijst */
     #model-list {
       margin-bottom: 1.5rem;
       opacity: 0; animation: fadeUp 0.8s ease forwards 0.7s;
-      max-height: 200px; overflow-y: auto;
+      max-height: 160px; overflow-y: auto;
+      width: 100%;
     }
- 
+
     .model-item {
       display: flex; align-items: center; justify-content: space-between;
       padding: 0.4rem 0.8rem;
-      border-bottom: 1px solid rgba(0,245,255,0.1); /* Kleur van scheidingslijn — aanpasbaar */
-      font-size: 0.65rem; /* Lettergrootte van de lijst — aanpasbaar */
+      border-bottom: 1px solid rgba(0,245,255,0.1);
+      font-size: 0.65rem;
     }
 
     .model-item:last-child { border-bottom: none; }
- 
+
     .model-barcode {
       font-family: 'Orbitron', monospace;
-      font-size: 0.6rem;
-      color: var(--cyan);                     /* Tekstkleur badge → zie --cyan */
-      background: rgba(0,245,255,0.1);        /* Achtergrond badge — aanpasbaar */
-      border: 1px solid var(--cyan-border);   /* Rand badge → zie --cyan-border */
+      font-size: 0.6rem; color: var(--cyan);
+      background: rgba(0,245,255,0.1);
+      border: 1px solid var(--cyan-border);
       padding: 0.15rem 0.4rem;
       min-width: 60px; text-align: center;
     }
- 
+
     .model-name { color: white; flex: 1; text-align: left; margin-left: 0.8rem; }
- 
+
     /* Interactie iconen */
     .interact-row {
       display: flex; justify-content: center; gap: 1rem;
@@ -166,160 +150,140 @@
     .interact-item {
       display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
     }
- 
+
     .interact-icon {
       font-size: 1.4rem;
     }
- 
+
     .interact-label {
-      font-size: 0.55rem;           /* Lettergrootte label onder icoon — aanpasbaar */
-      color: rgba(0,245,255,0.6);   /* Kleur label — aanpasbaar */
-      letter-spacing: 0.08em;
-      text-align: center;
+      font-size: 0.55rem; color: rgba(0,245,255,0.6);
+      letter-spacing: 0.08em; text-align: center;
     }
- 
+
     .bracket-box {
-      position: relative; display: inline-block;
+      position: relative; display: block;
       padding: 1.2rem 2rem; margin-bottom: 1.5rem;
       opacity: 0; animation: fadeUp 0.8s ease forwards 0.8s;
       width: 100%;
     }
- 
+
     .bracket-box .br-tl, .bracket-box .br-tr,
     .bracket-box .br-bl, .bracket-box .br-br {
-      position: absolute; width: 16px; height: 16px; /* Grootte van de hoekjes — aanpasbaar */
-      border-color: var(--cyan); /* Kleur van de hoekjes → zie --cyan */
-      border-style: solid;
+      position: absolute; width: 16px; height: 16px;
+      border-color: var(--cyan); border-style: solid;
     }
 
     .bracket-box .br-tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
     .bracket-box .br-tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
     .bracket-box .br-bl { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
     .bracket-box .br-br { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
- 
+
     .instruction { font-size: 0.75rem; color: var(--text); line-height: 2; letter-spacing: 0.05em; }
     .instruction strong { color: var(--cyan); }
- 
+
     .cta-btn {
       display: inline-flex; align-items: center; gap: 0.75rem;
-      padding: 1rem 2.5rem;         /* Grootte van de knop — aanpasbaar */
-      background: transparent;
-      border: 1px solid var(--cyan); /* Randkleur knop → zie --cyan */
-      color: var(--cyan);            /* Tekstkleur knop → zie --cyan */
-      font-family: 'Orbitron', monospace; /* Lettertype knop → aanpasbaar */
-      font-size: 0.8rem;             /* Lettergrootte knop — aanpasbaar */
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      cursor: pointer;
-      position: relative; overflow: hidden;
-      transition: all 0.3s ease;
+      padding: 1rem 2.5rem; background: transparent;
+      border: 1px solid var(--cyan); color: var(--cyan);
+      font-family: 'Orbitron', monospace; font-size: 0.8rem;
+      font-weight: 700; letter-spacing: 0.2em; cursor: pointer;
+      position: relative; overflow: hidden; transition: all 0.3s ease;
       opacity: 0; animation: fadeUp 0.8s ease forwards 1s;
       text-transform: uppercase; -webkit-appearance: none;
+      width: 100%; justify-content: center;
     }
- 
+
     .cta-btn::before {
       content: ''; position: absolute; inset: 0;
-      background: var(--cyan-dim); /* Vulkleur bij aanraken → zie --cyan-dim */
-      transform: translateX(-100%);
+      background: var(--cyan-dim); transform: translateX(-100%);
       transition: transform 0.3s ease;
     }
 
     .cta-btn:active::before { transform: translateX(0); }
     .cta-btn span { position: relative; z-index: 1; }
     .cta-btn:disabled { opacity: 0.4; cursor: not-allowed; }
- 
+
     .status {
       margin-top: 1.5rem; font-size: 0.65rem;
-      letter-spacing: 0.2em;
-      color: rgba(0,245,255,0.5); /* Kleur statustekst — aanpasbaar */
+      letter-spacing: 0.2em; color: rgba(0,245,255,0.5);
       opacity: 0; animation: fadeUp 0.8s ease forwards 1.2s;
     }
- 
+
     .status::before { content: '● '; color: #00ff88; animation: blink 1.5s step-end infinite; }
- 
+
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
     }
- 
+
     /* ===== LOADING ===== */
     #loading-screen {
       display: none; position: fixed; inset: 0;
-      background: var(--bg); /* Achtergrond laadscherm → zie --bg */
-      z-index: 2000;
+      background: var(--bg); z-index: 2000;
       flex-direction: column; align-items: center; justify-content: center;
       font-family: 'Share Tech Mono', monospace;
     }
 
     #loading-screen.active { display: flex; }
- 
+
     .loader-ring {
-      width: 60px; height: 60px; /* Grootte van de ring — aanpasbaar */
-      border: 2px solid rgba(0,245,255,0.2);  /* Achtergrondrand ring — aanpasbaar */
-      border-top-color: var(--cyan);           /* Actieve kleur ring → zie --cyan */
+      width: 60px; height: 60px;
+      border: 2px solid rgba(0,245,255,0.2);
+      border-top-color: var(--cyan);
       border-radius: 50%;
-      animation: spin 1s linear infinite; /* Snelheid — aanpasbaar */
-      margin-bottom: 1.5rem;
+      animation: spin 1s linear infinite; margin-bottom: 1.5rem;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
     .loader-text { font-size: 0.7rem; letter-spacing: 0.3em; color: var(--cyan); margin-bottom: 0.5rem; }
     .loader-sub { font-size: 0.6rem; color: rgba(0,245,255,0.4); letter-spacing: 0.15em; }
- 
+
     /* ===== AR SCENE ===== */
     #ar-scene { display: none; position: fixed; inset: 0; z-index: 500; }
     #ar-scene.active { display: block; }
- 
+
     /* ===== AR HUD ===== */
     #ar-ui {
       position: fixed; inset: 0; z-index: 600;
-      pointer-events: none; /* HUD vangt geen aanrakingen op (behalve de terug-knop) */
-      font-family: 'Share Tech Mono', monospace;
+      pointer-events: none; font-family: 'Share Tech Mono', monospace;
     }
- 
+
     .hud-corner {
-      position: absolute; width: 40px; height: 40px; /* Grootte hoekjes — aanpasbaar */
-      border-color: var(--cyan); /* Kleur hoekjes → zie --cyan */
-      border-style: solid;
-      opacity: 0.6; /* Transparantie hoekjes — aanpasbaar (0=onzichtbaar, 1=volledig zichtbaar) */
+      position: absolute; width: 40px; height: 40px;
+      border-color: var(--cyan); border-style: solid; opacity: 0.6;
     }
 
     .hud-tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
     .hud-tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; }
     .hud-bl { bottom: 16px; left: 16px; border-width: 0 0 2px 2px; }
     .hud-br { bottom: 16px; right: 16px; border-width: 0 2px 2px 0; }
- 
+
     .ar-topbar {
-      position: absolute; top: 0; left: 0; right: 0;
-      padding: 1rem 4rem;
+      position: absolute; top: 0; left: 0; right: 0; padding: 1rem 4rem;
       display: flex; justify-content: space-between; align-items: center;
-      background: linear-gradient(180deg, rgba(2,8,16,0.8) 0%, transparent 100%); /* Vervaagde zwarte balk bovenaan — aanpasbaar */
+      background: linear-gradient(180deg, rgba(2,8,16,0.8) 0%, transparent 100%);
     }
- 
+
     .ar-title {
-      font-family: 'Orbitron', monospace; /* Lettertype AR-titel → aanpasbaar */
-      font-size: 0.75rem;
-      font-weight: 700;
-      color: var(--cyan);    /* Kleur AR-titel → zie --cyan */
-      letter-spacing: 0.2em;
+      font-family: 'Orbitron', monospace; font-size: 0.75rem;
+      font-weight: 700; color: var(--cyan); letter-spacing: 0.2em;
     }
- 
+
     .ar-status { font-size: 0.6rem; color: rgba(0,245,255,0.6); letter-spacing: 0.15em; }
- 
+
     #active-label {
       position: absolute; top: 60px; left: 50%;
       transform: translateX(-50%);
-      background: rgba(2,8,16,0.85); /* Achtergrond label — aanpasbaar */
-      border: 1px solid var(--cyan-border);
-      color: var(--cyan);            /* Tekstkleur label → zie --cyan */
+      background: rgba(2,8,16,0.85);
+      border: 1px solid var(--cyan-border); color: var(--cyan);
       font-size: 0.65rem; letter-spacing: 0.2em;
       padding: 0.4rem 1.2rem;
       opacity: 0; transition: opacity 0.3s; white-space: nowrap;
     }
 
     #active-label.visible { opacity: 1; }
- 
+
     /* Mode indicator */
     #mode-indicator {
       position: absolute; top: 64px; right: 16px;
@@ -328,7 +292,7 @@
     }
 
     .mode-btn {
-      width: 36px; height: 36px; /* Grootte modus-iconen — aanpasbaar */
+      width: 36px; height: 36px;
       background: rgba(2,8,16,0.7);
       border: 1px solid rgba(0,245,255,0.2);
       border-radius: 8px;
@@ -336,19 +300,18 @@
       font-size: 16px; opacity: 0.4;
       transition: opacity 0.2s, border-color 0.2s;
     }
- 
+
     .mode-btn.active {
-      opacity: 1;
-      border-color: var(--cyan);            /* Randkleur actief icoon → zie --cyan */
-      background: rgba(0,245,255,0.15);     /* Achtergrond actief icoon — aanpasbaar */
+      opacity: 1; border-color: var(--cyan);
+      background: rgba(0,245,255,0.15);
     }
- 
+
     #interact-hint {
       position: absolute; bottom: 110px; left: 50%;
       transform: translateX(-50%);
       background: rgba(2,8,16,0.85);
       border: 1px solid var(--cyan-border);
-      color: var(--cyan);        /* Kleur hint-tekst → zie --cyan */
+      color: var(--cyan); border-radius: 0;
       font-size: 0.65rem; letter-spacing: 0.15em;
       padding: 0.4rem 1rem;
       opacity: 0; transition: opacity 0.4s;
@@ -356,69 +319,54 @@
     }
 
     #interact-hint.visible { opacity: 1; }
- 
+
     .ar-bottombar {
-      position: absolute; bottom: 0; left: 0; right: 0;
-      padding: 1.5rem 2rem;
-      background: linear-gradient(0deg, rgba(2,8,16,0.9) 0%, transparent 100%); /* Vervaagde zwarte balk onderaan — aanpasbaar */
+      position: absolute; bottom: 0; left: 0; right: 0; padding: 1.5rem 2rem;
+      background: linear-gradient(0deg, rgba(2,8,16,0.9) 0%, transparent 100%);
       display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
     }
- 
+
     .ar-hint { font-size: 0.7rem; color: var(--text); letter-spacing: 0.1em; text-align: center; }
     .ar-hint strong { color: var(--cyan); }
- 
+
     .scan-beam {
       position: absolute; left: 0; right: 0; height: 2px;
-      background: linear-gradient(90deg, transparent, var(--cyan), transparent); /* Kleur scanlijn → zie --cyan */
-      opacity: 0.4; /* Transparantie scanlijn — aanpasbaar */
-      animation: scanBeam 3s ease-in-out infinite; /* Snelheid — aanpasbaar */
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0.4; animation: scanBeam 3s ease-in-out infinite;
     }
 
     @keyframes scanBeam {
-      0% { top: 20%; opacity: 0; }
-      10% { opacity: 0.4; }
-      90% { opacity: 0.4; }
-      100% { top: 80%; opacity: 0; }
+      0% { top: 20%; opacity: 0; } 10% { opacity: 0.4; }
+      90% { opacity: 0.4; } 100% { top: 80%; opacity: 0; }
     }
- 
+
     .back-btn {
       position: absolute; bottom: 5rem; left: 50%;
       transform: translateX(-50%);
-      padding: 0.75rem 2rem;            /* Grootte terug-knop — aanpasbaar */
+      padding: 0.75rem 2rem;
       background: rgba(2,8,16,0.85);
-      border: 1px solid var(--cyan-border);
-      color: var(--cyan);               /* Kleur tekst terug-knop → zie --cyan */
-      font-family: 'Share Tech Mono', monospace;
-      font-size: 0.75rem; letter-spacing: 0.15em;
-      cursor: pointer; pointer-events: all;
-      -webkit-appearance: none; border-radius: 0;
+      border: 1px solid var(--cyan-border); color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      letter-spacing: 0.15em; cursor: pointer;
+      pointer-events: all; -webkit-appearance: none; border-radius: 0;
     }
 
     .back-btn:active { background: var(--cyan-dim); }
-
   </style>
 </head>
 
 <body>
- 
+
   <!-- LANDING PAGE -->
   <div id="landing">
     <div class="landing-content">
-
-      <!-- Animerende lijn bovenaan -->
       <div class="scan-line"></div>
-
-      <!-- Klein label boven de titel — aanpasbaar -->
       <div class="label">// AUGMENTED REALITY EXPERIENCE</div>
-
-      <!-- Hoofdtitel — aanpasbaar. De <span> geeft de "_" een andere kleur -->
       <h1 class="title">AR<span>_</span>VIEW</h1>
-
-      <!-- Ondertitel — wordt automatisch ingevuld door JavaScript -->
       <p class="subtitle" id="model-count">MODELLEN LADEN...</p>
- 
+
       <div id="model-list"></div>
- 
+
       <!-- Interactie uitleg -->
       <div class="interact-row">
         <div class="interact-item">
@@ -434,7 +382,7 @@
           <div class="interact-label">TWEE VINGERS<br>ROTEREN</div>
         </div>
       </div>
- 
+
       <div class="bracket-box">
         <span class="br-tl"></span><span class="br-tr"></span>
         <span class="br-bl"></span><span class="br-br"></span>
@@ -444,26 +392,25 @@
           <strong>STAP 03</strong> — Het 3D-object verschijnt
         </div>
       </div>
- 
+
       <button class="cta-btn" id="start-btn" onclick="startAR()" disabled>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
         </svg>
         <span>START AR</span>
       </button>
- 
-      <div class="status" id="status-text">MODELLEN WORDEN GELADEN...</div>
 
+      <div class="status" id="status-text">MODELLEN WORDEN GELADEN...</div>
     </div>
   </div>
- 
+
   <!-- LOADING -->
   <div id="loading-screen">
     <div class="loader-ring"></div>
-    <div class="loader-text">CAMERA INITIALISEREN</div>  <!-- Aanpasbaar -->
-    <div class="loader-sub">even geduld...</div>          <!-- Aanpasbaar -->
+    <div class="loader-text">CAMERA INITIALISEREN</div>
+    <div class="loader-sub">even geduld...</div>
   </div>
- 
+
   <!-- AR SCENE -->
   <div id="ar-scene">
     <a-scene
@@ -474,124 +421,96 @@
       <a-assets id="ar-assets" timeout="60000"></a-assets>
       <a-entity camera></a-entity>
     </a-scene>
- 
-    <div id="ar-ui">
 
-      <!-- Hoekdecoraties -->
+    <div id="ar-ui">
       <div class="hud-corner hud-tl"></div>
       <div class="hud-corner hud-tr"></div>
       <div class="hud-corner hud-bl"></div>
       <div class="hud-corner hud-br"></div>
- 
+
       <div class="ar-topbar">
-        <div class="ar-title">AR_VIEW</div>           <!-- Aanpasbaar -->
-        <div class="ar-status">CAMERA ACTIEF ●</div>  <!-- Aanpasbaar -->
+        <div class="ar-title">AR_VIEW</div>
+        <div class="ar-status">CAMERA ACTIEF ●</div>
       </div>
- 
+
       <div id="active-label">OBJECT GEVONDEN</div>
- 
+
       <div id="mode-indicator">
         <div class="mode-btn" id="mode-move">☝️</div>
         <div class="mode-btn" id="mode-scale">🤏</div>
         <div class="mode-btn" id="mode-rotate">🔄</div>
       </div>
- 
-      <div id="interact-hint"></div>
 
-      <!-- Bewegende scanlijn -->
+      <div id="interact-hint"></div>
       <div class="scan-beam"></div>
- 
+
       <div class="ar-bottombar">
         <div class="ar-hint">Richt op een <strong>BARCODE</strong> om het object te zien</div>
       </div>
- 
-      <button class="back-btn" onclick="stopAR()">← TERUG</button>
 
+      <button class="back-btn" onclick="stopAR()">← TERUG</button>
     </div>
   </div>
- 
+
   <script>
-    // ============================================================
-    // INSTELLINGEN — hier kun je gedrag aanpassen
-    // ============================================================
-
-    const LAADSCHERM_DUUR = 1500; // Hoe lang het laadscherm zichtbaar blijft in ms (1500 = 1,5 seconden)
-    const HINT_DUUR = 1800;       // Hoe lang een hint-tekst zichtbaar blijft in ms
-    const OBJECT_SCHAAL = 0.5;    // Begingrootte van objecten (0.5 = half, 1 = normaal, 2 = dubbel)
-    const OBJECT_MAX_SCHAAL = 5;  // Maximale schaal bij pinch
-    const OBJECT_MIN_SCHAAL = 0.05; // Minimale schaal bij pinch
-    const BEWEEG_SNELHEID = 3;    // Hoe snel een object beweegt bij slepen (hoger = sneller)
-    const ROTEER_SNELHEID = 1.5;  // Hoe snel een object roteert (hoger = sneller)
-
-
-    // ============================================================
-    // VARIABELEN — niet aanpassen
-    // ============================================================
-
     let models = [];
     let arReady = false;
     const objectStates = {};
- 
+
     function getState(markerId) {
       if (!objectStates[markerId]) {
-        objectStates[markerId] = {
-          scale: OBJECT_SCHAAL,
-          rotX: 0, rotY: 0, rotZ: 0,
-          posX: 0, posY: 0, posZ: 0
-        };
+        objectStates[markerId] = { scale: 0.5, rotX: 0, rotY: 0, rotZ: 0, posX: 0, posY: 0, posZ: 0 };
       }
       return objectStates[markerId];
     }
- 
+
     function applyState(entity, state) {
       entity.setAttribute('scale', `${state.scale} ${state.scale} ${state.scale}`);
       entity.setAttribute('rotation', `${state.rotX} ${state.rotY} ${state.rotZ}`);
       entity.setAttribute('position', `${state.posX} ${state.posY} ${state.posZ}`);
     }
- 
+
     let activeMarkerId = null;
     let activeEntity = null;
     let touch = { prev: null, mode: null };
- 
+
     function getTouchDistance(t1, t2) {
       return Math.sqrt(Math.pow(t1.clientX - t2.clientX, 2) + Math.pow(t1.clientY - t2.clientY, 2));
     }
- 
+
     function getTouchAngle(t1, t2) {
       return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
     }
- 
+
     function getTouchMidpoint(t1, t2) {
       return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
     }
- 
+
     function showHint(text) {
       const hint = document.getElementById('interact-hint');
       hint.textContent = text;
       hint.classList.add('visible');
       clearTimeout(hint._timer);
-      hint._timer = setTimeout(() => hint.classList.remove('visible'), HINT_DUUR);
+      hint._timer = setTimeout(() => hint.classList.remove('visible'), 1800);
     }
- 
+
     function setModeIndicator(mode) {
       document.getElementById('mode-move').classList.toggle('active', mode === 'move');
       document.getElementById('mode-scale').classList.toggle('active', mode === 'scale');
       document.getElementById('mode-rotate').classList.toggle('active', mode === 'rotate');
     }
- 
+
     function setupTouchHandlers() {
       const arContainer = document.getElementById('ar-scene');
- 
+
       arContainer.addEventListener('touchstart', (e) => {
         if (!activeEntity) return;
         e.preventDefault();
-
         if (e.touches.length === 1) {
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
           touch.mode = 'move';
           setModeIndicator('move');
           showHint('SLEPEN OM TE VERPLAATSEN');
-
         } else if (e.touches.length === 2) {
           touch.prevDist = getTouchDistance(e.touches[0], e.touches[1]);
           touch.prevAngle = getTouchAngle(e.touches[0], e.touches[1]);
@@ -600,18 +519,17 @@
           setModeIndicator('scale');
         }
       }, { passive: false });
- 
+
       arContainer.addEventListener('touchmove', (e) => {
         if (!activeEntity || !activeMarkerId) return;
         e.preventDefault();
         const state = getState(activeMarkerId);
 
         if (e.touches.length === 1 && touch.mode === 'move') {
-          // 1 vinger: object verplaatsen
           const dx = (e.touches[0].clientX - touch.prev.x) / window.innerWidth;
           const dy = (e.touches[0].clientY - touch.prev.y) / window.innerHeight;
-          state.posX += dx * BEWEEG_SNELHEID;
-          state.posZ += dy * BEWEEG_SNELHEID;
+          state.posX += dx * 3;
+          state.posZ += dy * 3;
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
           applyState(activeEntity, state);
 
@@ -622,11 +540,11 @@
           const distDelta = curDist - touch.prevDist;
           const angleDelta = curAngle - touch.prevAngle;
           const midDeltaY = curMid.y - touch.prevMid.y;
- 
+
           state.scale = Math.max(0.05, Math.min(5, state.scale * (curDist / touch.prevDist)));
           state.rotY += angleDelta * 1.5;
           state.rotX += midDeltaY * 0.4;
- 
+
           if (Math.abs(distDelta) > Math.abs(angleDelta * 5)) {
             if (touch.mode !== 'scale') { touch.mode = 'scale'; setModeIndicator('scale'); showHint('PINCH OM TE SCHALEN'); }
           } else {
@@ -639,29 +557,26 @@
           applyState(activeEntity, state);
         }
       }, { passive: false });
- 
+
       arContainer.addEventListener('touchend', (e) => {
-        if (e.touches.length === 0) {
-          touch.mode = null;
-          setModeIndicator(null);
-        } else if (e.touches.length === 1) {
+        if (e.touches.length === 0) { touch.mode = null; setModeIndicator(null); }
+        else if (e.touches.length === 1) {
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-          touch.mode = 'move';
-          setModeIndicator('move');
+          touch.mode = 'move'; setModeIndicator('move');
         }
       }, { passive: false });
     }
- 
+
     async function loadModels() {
       try {
-        // Laad de lijst van GLB-bestanden (nocache voorkomt dat oude versie gebruikt wordt)
         const res = await fetch('models.json?nocache=' + Date.now());
         models = await res.json();
         setupLanding();
         setupARScene();
-      } 
-
-
+      } catch (e) {
+        document.getElementById('status-text').textContent = 'FOUT: MODELS.JSON NIET GEVONDEN';
+      }
+    }
 
     function setupLanding() {
       const list = document.getElementById('model-list');
@@ -670,13 +585,9 @@
       const status = document.getElementById('status-text');
 
       count.textContent = models.length + ' OBJECTEN GELADEN';
- 
+
       list.innerHTML = models.map((name, i) => {
-        const cleanName = name
-          .replace(/^models\//i, '')   // Verwijder mapnaam
-          .replace('.glb', '')          // Verwijder bestandsextensie
-          .replace(/-ply/gi, '')        // Verwijder "-ply" suffix
-          .replace(/_ply/gi, '');       // Verwijder "_ply" suffix
+        const cleanName = name.replace('.glb', '').replace(/-ply/gi, '').replace(/_ply/gi, '');
         return `<div class="model-item">
           <span class="model-barcode">BARCODE ${i}</span>
           <span class="model-name">${cleanName}</span>
@@ -686,34 +597,33 @@
       btn.disabled = false;
       status.textContent = 'SYSTEEM GEREED — CAMERA VEREIST';
     }
- 
+
     function setupARScene() {
       const assets = document.getElementById('ar-assets');
       const scene = document.getElementById('ar-scene-el');
 
       models.forEach((name, i) => {
-        // Laad het GLB-bestand in als asset
         const asset = document.createElement('a-asset-item');
         asset.setAttribute('id', 'model-' + i);
         asset.setAttribute('src', name);
         assets.appendChild(asset);
- 
+
         const marker = document.createElement('a-marker');
         marker.setAttribute('type', 'barcode');
         marker.setAttribute('value', String(i));
         marker.setAttribute('id', 'marker-' + i);
- 
+
         const entity = document.createElement('a-entity');
         entity.setAttribute('gltf-model', '#model-' + i);
         entity.setAttribute('id', 'entity-' + i);
         applyState(entity, getState('marker-' + i));
- 
+
         marker.appendChild(entity);
         const camera = scene.querySelector('a-entity[camera]');
         scene.insertBefore(marker, camera);
- 
+
         const cleanName = name.replace('.glb', '').replace(/-ply/gi, '').replace(/_ply/gi, '');
- 
+
         marker.addEventListener('markerFound', () => {
           activeMarkerId = 'marker-' + i;
           activeEntity = entity;
@@ -722,12 +632,9 @@
           label.classList.add('visible');
           showHint('OBJECT GEVONDEN — SLEEP OF PINCH');
         });
- 
+
         marker.addEventListener('markerLost', () => {
-          if (activeMarkerId === 'marker-' + i) {
-            activeMarkerId = null;
-            activeEntity = null;
-          }
+          if (activeMarkerId === 'marker-' + i) { activeMarkerId = null; activeEntity = null; }
           document.getElementById('active-label').classList.remove('visible');
           setModeIndicator(null);
         });
@@ -735,26 +642,24 @@
 
       arReady = true;
     }
- 
+
     function startAR() {
       if (!arReady) return;
       document.getElementById('landing').style.display = 'none';
       document.getElementById('loading-screen').classList.add('active');
-
       setTimeout(() => {
         document.getElementById('loading-screen').classList.remove('active');
         document.getElementById('ar-scene').classList.add('active');
         setupTouchHandlers();
-      }, LAADSCHERM_DUUR);
+      }, 1500);
     }
 
     function stopAR() {
       document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
     }
- 
-    loadModels();
 
+    loadModels();
   </script>
 
 </body>
