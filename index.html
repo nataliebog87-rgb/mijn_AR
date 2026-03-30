@@ -2,12 +2,6 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
-
-  <!--
-    VIEWPORT — niet aanpassen
-    Zorgt voor correcte schaling op Android en iPhone.
-    viewport-fit=cover vult ook de notch-zone op iPhones.
-  -->
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 
   <!-- Paginatitel — verschijnt in de browsertab -->
@@ -22,24 +16,16 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
 
-  <!--
-    LETTERTYPES — aanpasbaar
+  <!--LETTERTYPES — aanpasbaar
     Huidige keuze: Orbitron (titels) + Share Tech Mono (tekst)
-    Andere opties van Google Fonts:
-      - Rajdhani + Roboto Mono  → iets zachter futuristisch
-      - Exo 2 + Space Mono      → meer sci-fi
-      - Bebas Neue + IBM Plex Mono → strak en industrieel
-    Vervang de naam in de URL én in de CSS (font-family).
-  -->
+    Vervang de naam in de URL én in de CSS (font-family).-->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
   <style>
 
-    /* ============================================================
-       KLEURENPALET — hier pas je alle kleuren aan
+    /* KLEURENPALET — hier pas je alle kleuren aan
        Verander de waarden rechts van de dubbele punt.
-       Gebruik hex-codes (#rrggbb) of rgba(r,g,b,a) voor transparantie.
-    ============================================================ */
+       Gebruik hex-codes (#rrggbb) of rgba(r,g,b,a) voor transparantie.*/
     :root {
       --cyan: #00f5ff;                      /* Hoofdkleur: kleur van titels, knoppen, randen */
       --cyan-dim: rgba(0, 245, 255, 0.15);  /* Lichte versie van hoofdkleur: hover-effect knop */
@@ -49,10 +35,8 @@
       --grid: rgba(0, 245, 255, 0.04);       /* Kleur van de gridlijnen op de achtergrond (heel subtiel) */
     }
 
-    /* ============================================================
-       BASIS — niet aanpassen
-       Zorgt voor correcte weergave op alle schermen.
-    ============================================================ */
+    /* BASIS — niet aanpassen
+       Zorgt voor correcte weergave op alle schermen. */
     html, body {
       margin: 0; padding: 0;
       width: 100%; height: 100%;
@@ -65,9 +49,7 @@
     body { background: var(--bg); }
 
 
-    /* ============================================================
-       LANDINGSPAGINA — de startpagina die de gebruiker ziet
-    ============================================================ */
+    /* LANDINGSPAGINA — de startpagina die de gebruiker ziet */
     #landing {
       position: fixed; inset: 0;
       background: var(--bg); /* Achtergrondkleur → zie --bg hierboven */
@@ -170,9 +152,7 @@
       animation: fadeUp 0.8s ease forwards 0.6s;
     }
 
-    /* ============================================================
-       OBJECTENLIJST — toont welk object bij welke barcode hoort
-    ============================================================ */
+    /* OBJECTENLIJST — toont welk object bij welke barcode hoort */
     #model-list {
       margin-bottom: 1.5rem;
       opacity: 0; animation: fadeUp 0.8s ease forwards 0.7s;
@@ -208,9 +188,7 @@
       flex: 1; text-align: left; margin-left: 0.8rem;
     }
 
-    /* ============================================================
-       INTERACTIE-ICONEN (☝️ 🤏 🔄)
-    ============================================================ */
+    /* INTERACTIE-ICONEN (☝️ 🤏 🔄) */
     .interact-row {
       display: flex; justify-content: center; gap: 1rem;
       margin-bottom: 1.5rem; width: 100%;
@@ -230,9 +208,7 @@
       text-align: center;
     }
 
-    /* ============================================================
-       STAPPENBOX met hoekdecoraties
-    ============================================================ */
+    /* STAPPENBOX met hoekdecoraties */
     .bracket-box {
       position: relative; display: block;
       padding: 1.2rem 2rem; /* Ruimte binnen de box — aanpasbaar */
@@ -265,9 +241,7 @@
     /* "STAP 01" tekst in de stappen */
     .instruction strong { color: var(--cyan); } /* Kleur stapnummers → zie --cyan */
 
-    /* ============================================================
-       START AR KNOP
-    ============================================================ */
+    /* START AR KNOP */
     .cta-btn {
       display: inline-flex; align-items: center; gap: 0.75rem;
       padding: 1rem 2.5rem;         /* Grootte van de knop — aanpasbaar */
@@ -322,9 +296,7 @@
     }
 
 
-    /* ============================================================
-       LAADSCHERM — verschijnt terwijl de camera opstart
-    ============================================================ */
+    /* LAADSCHERM — verschijnt terwijl de camera opstart */
     #loading-screen {
       display: none; position: fixed; inset: 0;
       background: var(--bg); /* Achtergrond laadscherm → zie --bg */
@@ -361,16 +333,12 @@
     }
 
 
-    /* ============================================================
-       AR SCENE CONTAINER
-    ============================================================ */
+    /* AR SCENE CONTAINER */
     #ar-scene { display: none; position: fixed; inset: 0; z-index: 500; }
     #ar-scene.active { display: block; }
 
 
-    /* ============================================================
-       AR HUD — de overlay die zichtbaar is tijdens AR
-    ============================================================ */
+    /* AR HUD — de overlay die zichtbaar is tijdens AR */
     #ar-ui {
       position: fixed; inset: 0; z-index: 600;
       pointer-events: none; /* HUD vangt geen aanrakingen op (behalve de terug-knop) */
@@ -520,10 +488,7 @@
 
 <body>
 
-  <!-- ============================================================
-       LANDINGSPAGINA
-       Pas de teksten aan naar wens.
-  ============================================================ -->
+  <!-- LANDINGSPAGINA -- Pas de teksten aan naar wens.-->
   <div id="landing">
     <div class="landing-content">
 
@@ -584,20 +549,15 @@
   </div>
 
 
-  <!-- ============================================================
-       LAADSCHERM — teksten aanpasbaar
-  ============================================================ -->
+  <!--LAADSCHERM — teksten aanpasbaar-->
   <div id="loading-screen">
     <div class="loader-ring"></div>
     <div class="loader-text">CAMERA INITIALISEREN</div>  <!-- Aanpasbaar -->
     <div class="loader-sub">even geduld...</div>          <!-- Aanpasbaar -->
   </div>
 
-
-  <!-- ============================================================
-       AR SCENE — niet aanpassen
-       Wordt dynamisch gevuld door JavaScript vanuit models.json
-  ============================================================ -->
+  <!-- AR SCENE — niet aanpassen
+       Wordt dynamisch gevuld door JavaScript vanuit models.json -->
   <div id="ar-scene">
     <a-scene
       id="ar-scene-el"
@@ -632,42 +592,30 @@
         <div class="mode-btn" id="mode-scale">🤏</div>
         <div class="mode-btn" id="mode-rotate">🔄</div>
       </div>
-
       <!-- Hint-tekst (automatisch ingevuld) -->
       <div id="interact-hint"></div>
-
       <!-- Bewegende scanlijn -->
       <div class="scan-beam"></div>
-
       <!-- Onderste balk — tekst aanpasbaar -->
       <div class="ar-bottombar">
         <div class="ar-hint">Richt op een <strong>BARCODE</strong> om het object te zien</div>
       </div>
-
       <!-- Terug-knop — tekst aanpasbaar -->
       <button class="back-btn" onclick="stopAR()">← TERUG</button>
-
     </div>
   </div>
-
-
   <script>
-    // ============================================================
+ 
     // INSTELLINGEN — hier kun je gedrag aanpassen
-    // ============================================================
-
     const LAADSCHERM_DUUR = 1500; // Hoe lang het laadscherm zichtbaar blijft in ms (1500 = 1,5 seconden)
     const HINT_DUUR = 1800;       // Hoe lang een hint-tekst zichtbaar blijft in ms
     const OBJECT_SCHAAL = 0.5;    // Begingrootte van objecten (0.5 = half, 1 = normaal, 2 = dubbel)
-    const OBJECT_MAX_SCHAAL = 5;  // Maximale schaal bij pinch
-    const OBJECT_MIN_SCHAAL = 0.05; // Minimale schaal bij pinch
+    const OBJECT_MAX_SCHAAL = 7;  // Maximale schaal bij pinch
+    const OBJECT_MIN_SCHAAL = 0.07; // Minimale schaal bij pinch
     const BEWEEG_SNELHEID = 3;    // Hoe snel een object beweegt bij slepen (hoger = sneller)
     const ROTEER_SNELHEID = 1.5;  // Hoe snel een object roteert (hoger = sneller)
 
-
-    // ============================================================
     // VARIABELEN — niet aanpassen
-    // ============================================================
 
     let models = [];
     let arReady = false;
@@ -695,12 +643,8 @@
     let activeMarkerId = null; // Welke marker momenteel zichtbaar is
     let activeEntity = null;   // Het A-Frame object dat momenteel actief is
     let touch = { prev: null, mode: null }; // Touch-status bijhouden
-
-
-    // ============================================================
+ 
     // TOUCH HULPFUNCTIES
-    // ============================================================
-
     // Afstand tussen twee vingers berekenen (voor pinch)
     function getTouchDistance(t1, t2) {
       return Math.sqrt(Math.pow(t1.clientX - t2.clientX, 2) + Math.pow(t1.clientY - t2.clientY, 2));
@@ -732,12 +676,9 @@
       document.getElementById('mode-rotate').classList.toggle('active', mode === 'rotate');
     }
 
-
-    // ============================================================
     // TOUCH INTERACTIE HANDLERS
     // Luistert naar vingergebaren op de AR-weergave
-    // ============================================================
-
+ 
     function setupTouchHandlers() {
       const arContainer = document.getElementById('ar-scene');
 
@@ -783,6 +724,7 @@
           const distDelta = curDist - touch.prevDist;
           const angleDelta = curAngle - touch.prevAngle;
           const midDeltaY = curMid.y - touch.prevMid.y;
+          const midDeltaX = curMid.x - touch.prevMid.x;
 
           // 2 vingers uit elkaar/samen: schalen
           state.scale = Math.max(OBJECT_MIN_SCHAAL, Math.min(OBJECT_MAX_SCHAAL, state.scale * (curDist / touch.prevDist)));
@@ -792,6 +734,9 @@
 
           // 2 vingers omhoog/omlaag: X-as rotatie
           state.rotX += midDeltaY * 0.4;
+
+          // 2 vingers naar links/rechts: Z-as rotatie --> hoe doe ik dit??????
+          state.rotZ += midDeltaX * 0.4;
 
           // Bepaal of schalen of roteren dominant is voor de visuele indicator
           if (Math.abs(distDelta) > Math.abs(angleDelta * 5)) {
@@ -819,12 +764,9 @@
         }
       }, { passive: false });
     }
-
-
-    // ============================================================
+ 
     // MODELLEN LADEN VANUIT models.json
-    // ============================================================
-
+ 
     async function loadModels() {
       try {
         // Laad de lijst van GLB-bestanden (nocache voorkomt dat oude versie gebruikt wordt)
@@ -917,16 +859,11 @@
           setModeIndicator(null);
         });
       });
-
       arReady = true;
     }
 
-
-    // ============================================================
     // CAMERA STOPPEN — hulpfunctie
     // Stopt alle actieve camerastreams in de browser
-    // ============================================================
-
     function stopCamera() {
       // Zoek de video-element dat AR.js gebruikt
       const videos = document.querySelectorAll('video');
@@ -937,60 +874,36 @@
         }
       });
     }
-
-
-    // ============================================================
     // AR STARTEN EN STOPPEN
-    // ============================================================
-
     function startAR() {
       if (!arReady) return;
       document.getElementById('landing').style.display = 'none';
       document.getElementById('loading-screen').classList.add('active');
-
       setTimeout(() => {
         document.getElementById('loading-screen').classList.remove('active');
         document.getElementById('ar-scene').classList.add('active');
         setupTouchHandlers();
       }, LAADSCHERM_DUUR);
     }
-
     function stopAR() {
       document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
       stopCamera(); // Camera uitschakelen bij terugkeren naar landingspagina
     }
-
-
-    // ============================================================
     // CAMERA STOPPEN BIJ VERLATEN VAN DE PAGINA
     // Werkt voor: tabblad sluiten, andere pagina navigeren, telefoon vergrendelen
-    // ============================================================
-
-    // Wanneer de pagina verborgen wordt (bv. ander tabblad, telefoon vergrendeld)
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         stopCamera();
       }
     });
-
-    // Wanneer de gebruiker de pagina verlaat (bv. sluit tabblad, navigeert weg)
     window.addEventListener('beforeunload', () => {
       stopCamera();
     });
-
-    // Wanneer de pagina op de achtergrond gaat op mobiel
     window.addEventListener('pagehide', () => {
       stopCamera();
     });
-
-
-    // ============================================================
-    // OPSTARTEN
-    // ============================================================
     loadModels();
-
   </script>
-
 </body>
 </html>
