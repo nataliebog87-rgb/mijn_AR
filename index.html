@@ -600,7 +600,7 @@
     const OBJECT_SCHAAL = 0.5;
     const OBJECT_MAX_SCHAAL = 5;
     const OBJECT_MIN_SCHAAL = 0.05;
-    const BEWEEG_SNELHEID = 1.2;
+    const BEWEEG_SNELHEID = 1.5;
     const ROTEER_SNELHEID = 0.75;
     const ROTATIE_TILT_SNELHEID = 0.14;
     const SMOOTHING = 0.18;
@@ -682,18 +682,15 @@
         syncObjectTransform(entity, { current });
       });
 
-      requestAnimationFrame(animateObjects);
-    }
+      requestAnimationFrame(animateObjects);}
 
     function startRenderLoop() {
       if (renderLoopStarted) return;
       renderLoopStarted = true;
-      requestAnimationFrame(animateObjects);
-    }
+      requestAnimationFrame(animateObjects);}
 
     function getTouchDistance(t1, t2) {
-      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-    }
+      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);}
 
     function getTouchAngle(t1, t2) {
       return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
@@ -708,8 +705,7 @@
       hint.textContent = text;
       hint.classList.add('visible');
       clearTimeout(hint._timer);
-      hint._timer = setTimeout(() => hint.classList.remove('visible'), HINT_DUUR);
-    }
+      hint._timer = setTimeout(() => hint.classList.remove('visible'), HINT_DUUR);}
 
     function setModeIndicator(mode) {
       document.getElementById('mode-move').classList.toggle('active', mode === 'move');
