@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -436,7 +435,7 @@
 
     #interact-hint {
       position: absolute;
-      bottom: 96px;
+      bottom: 124px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(2,8,16,0.85);
@@ -496,7 +495,7 @@
 
     .back-btn {
       position: absolute;
-      bottom: 2rem;
+      bottom: 1.25rem;
       left: 50%;
       transform: translateX(-50%);
       padding: 0.5rem 1.1rem;
@@ -529,7 +528,7 @@
       }
 
       #interact-hint {
-        bottom: 84px;
+        bottom: 108px;
         font-size: 0.58rem;
         padding: 0.3rem 0.7rem;
       }
@@ -543,7 +542,7 @@
       }
 
       .back-btn {
-        bottom: 1.35rem;
+        bottom: 1rem;
         padding: 0.45rem 0.95rem;
         font-size: 0.62rem;
       }
@@ -982,12 +981,17 @@
     function startAR() {
       if (!arReady || arStarted) return;
       arStarted = true;
+      const scene = document.getElementById('ar-scene-el');
       document.getElementById('landing').style.display = 'none';
       document.getElementById('loading-screen').classList.add('active');
 
       setTimeout(() => {
         document.getElementById('loading-screen').classList.remove('active');
         document.getElementById('ar-scene').classList.add('active');
+        // Optimalisatie: hervat de A-Frame scene expliciet zodat AR.js opnieuw kan renderen.
+        if (scene && typeof scene.play === 'function') {
+          scene.play();
+        }
         setupTouchHandlers();
         // Optimalisatie: extra feedback zodra de AR-weergave effectief zichtbaar is.
         showHint('RICHT OP EEN BARCODE OM TE STARTEN');
@@ -995,6 +999,7 @@
     }
 
     function stopAR() {
+      const scene = document.getElementById('ar-scene-el');
       document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
       activeMarkerId = null;
@@ -1002,8 +1007,10 @@
       arStarted = false;
       Object.keys(markerLostTimers).forEach((key) => clearTimeout(markerLostTimers[key]));
       resetInteractionState();
-      stopCamera();
-    }
+      // Optimalisatie: stop de camera hier niet, want AR.js start die niet altijd netjes opnieuw op.
+      if (scene && typeof scene.pause === 'function') {
+        scene.pause();
+      }}
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
@@ -1012,6 +1019,7 @@
 
     window.addEventListener('beforeunload', stopCamera);
     window.addEventListener('pagehide', stopCamera);
+
     loadModels();
   </script>
 </body>
