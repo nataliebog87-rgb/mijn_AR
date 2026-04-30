@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="nl">
 <head>
@@ -17,7 +18,8 @@
       --cyan-border: rgba(0, 245, 255, 0.4);
       --bg: #020810;
       --text: #c8e8ff;
-      --grid: rgba(0, 245, 255, 0.04);}
+      --grid: rgba(0, 245, 255, 0.04);
+    }
 
     html, body {
       margin: 0;
@@ -26,7 +28,8 @@
       height: 100%;
       overflow: hidden;
       -webkit-text-size-adjust: 100%;
-      text-size-adjust: 100%;}
+      text-size-adjust: 100%;
+    }
 
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); }
@@ -42,7 +45,8 @@
       z-index: 1000;
       overflow-y: auto;
       overflow-x: hidden;
-      font-family: 'Share Tech Mono', monospace;}
+      font-family: 'Share Tech Mono', monospace;
+    }
 
     #landing::before {
       content: '';
@@ -52,11 +56,13 @@
         linear-gradient(var(--grid) 1px, transparent 1px),
         linear-gradient(90deg, var(--grid) 1px, transparent 1px);
       background-size: 40px 40px;
-      animation: gridMove 20s linear infinite;}
+      animation: gridMove 20s linear infinite;
+    }
 
     @keyframes gridMove {
       0% { transform: translateY(0); }
-      100% { transform: translateY(40px); }}
+      100% { transform: translateY(40px); }
+    }
 
     #landing::after {
       content: '';
@@ -65,11 +71,13 @@
       height: 600px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%);
-      animation: pulse 4s ease-in-out infinite;}
+      animation: pulse 4s ease-in-out infinite;
+    }
 
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.2); opacity: 1; }}
+      50% { transform: scale(1.2); opacity: 1; }
+    }
 
     .landing-content {
       position: relative;
@@ -83,18 +91,21 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;}
+      justify-content: center;
+    }
 
     .scan-line {
       width: 200px;
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
       margin: 0 auto 2rem;
-      animation: scanPulse 2s ease-in-out infinite;}
+      animation: scanPulse 2s ease-in-out infinite;
+    }
 
     @keyframes scanPulse {
       0%, 100% { opacity: 0.4; width: 100px; }
-      50% { opacity: 1; width: 200px; }}
+      50% { opacity: 1; width: 200px; }
+    }
 
     .label {
       font-size: 0.7rem;
@@ -102,7 +113,8 @@
       color: var(--cyan);
       margin-bottom: 1rem;
       opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.2s;}
+      animation: fadeUp 0.8s ease forwards 0.2s;
+    }
 
     .title {
       font-family: 'Orbitron', monospace;
@@ -112,11 +124,13 @@
       line-height: 1;
       margin-bottom: 0.5rem;
       opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.4s;}
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
 
     .title span {
       color: var(--cyan);
-      text-shadow: 0 0 30px var(--cyan);}
+      text-shadow: 0 0 30px var(--cyan);
+    }
 
     .subtitle {
       font-size: 0.85rem;
@@ -124,7 +138,8 @@
       letter-spacing: 0.15em;
       margin-bottom: 1.5rem;
       opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.6s;}
+      animation: fadeUp 0.8s ease forwards 0.6s;
+    }
 
     #model-list {
       margin-bottom: 1.5rem;
@@ -132,7 +147,8 @@
       animation: fadeUp 0.8s ease forwards 0.7s;
       max-height: 160px;
       overflow-y: auto;
-      width: 100%;}
+      width: 100%;
+    }
 
     .model-item {
       display: flex;
@@ -140,7 +156,8 @@
       justify-content: space-between;
       padding: 0.4rem 0.8rem;
       border-bottom: 1px solid rgba(0,245,255,0.1);
-      font-size: 0.65rem;}
+      font-size: 0.65rem;
+    }
 
     .model-item:last-child { border-bottom: none; }
 
@@ -152,13 +169,15 @@
       border: 1px solid var(--cyan-border);
       padding: 0.15rem 0.4rem;
       min-width: 60px;
-      text-align: center;}
+      text-align: center;
+    }
 
     .model-name {
       color: white;
       flex: 1;
       text-align: left;
-      margin-left: 0.8rem;}
+      margin-left: 0.8rem;
+    }
 
     .interact-row {
       display: flex;
@@ -167,13 +186,15 @@
       margin-bottom: 1.5rem;
       width: 100%;
       opacity: 0;
-      animation: fadeUp 0.8s ease forwards 0.75s;}
+      animation: fadeUp 0.8s ease forwards 0.75s;
+    }
 
     .interact-item {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.3rem;}
+      gap: 0.3rem;
+    }
 
     .interact-icon { font-size: 1.4rem; }
 
@@ -181,7 +202,8 @@
       font-size: 0.55rem;
       color: rgba(0,245,255,0.6);
       letter-spacing: 0.08em;
-      text-align: center;}
+      text-align: center;
+    }
 
     .bracket-box {
       position: relative;
@@ -190,7 +212,8 @@
       margin-bottom: 1.5rem;
       opacity: 0;
       animation: fadeUp 0.8s ease forwards 0.8s;
-      width: 100%;}
+      width: 100%;
+    }
 
     .bracket-box .br-tl, .bracket-box .br-tr,
     .bracket-box .br-bl, .bracket-box .br-br {
@@ -198,7 +221,8 @@
       width: 16px;
       height: 16px;
       border-color: var(--cyan);
-      border-style: solid;}
+      border-style: solid;
+    }
 
     .bracket-box .br-tl { top: 0; left: 0; border-width: 2px 0 0 2px; }
     .bracket-box .br-tr { top: 0; right: 0; border-width: 2px 2px 0 0; }
@@ -209,7 +233,8 @@
       font-size: 0.75rem;
       color: var(--text);
       line-height: 2;
-      letter-spacing: 0.05em;}
+      letter-spacing: 0.05em;
+    }
 
     .instruction strong { color: var(--cyan); }
 
@@ -234,7 +259,8 @@
       text-transform: uppercase;
       -webkit-appearance: none;
       width: 100%;
-      justify-content: center;}
+      justify-content: center;
+    }
 
     .cta-btn::before {
       content: '';
@@ -242,7 +268,8 @@
       inset: 0;
       background: var(--cyan-dim);
       transform: translateX(-100%);
-      transition: transform 0.3s ease;}
+      transition: transform 0.3s ease;
+    }
 
     .cta-btn:active::before { transform: translateX(0); }
     .cta-btn span { position: relative; z-index: 1; }
@@ -254,17 +281,20 @@
       letter-spacing: 0.2em;
       color: rgba(0,245,255,0.5);
       opacity: 0;
-      animation: fadeUp 0.8s ease forwards 1.2s;}
+      animation: fadeUp 0.8s ease forwards 1.2s;
+    }
 
     .status::before {
       content: '● ';
       color: #00ff88;
-      animation: blink 1.5s step-end infinite;}
+      animation: blink 1.5s step-end infinite;
+    }
 
     @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }}
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     #loading-screen {
       display: none;
@@ -275,7 +305,8 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-family: 'Share Tech Mono', monospace;}
+      font-family: 'Share Tech Mono', monospace;
+    }
 
     #loading-screen.active { display: flex; }
 
@@ -286,7 +317,8 @@
       border-top-color: var(--cyan);
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-bottom: 1.5rem;}
+      margin-bottom: 1.5rem;
+    }
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -294,12 +326,14 @@
       font-size: 0.7rem;
       letter-spacing: 0.3em;
       color: var(--cyan);
-      margin-bottom: 0.5rem;}
+      margin-bottom: 0.5rem;
+    }
 
     .loader-sub {
       font-size: 0.6rem;
       color: rgba(0,245,255,0.4);
-      letter-spacing: 0.15em;}
+      letter-spacing: 0.15em;
+    }
 
     #ar-scene { display: none; position: fixed; inset: 0; z-index: 500; }
     #ar-scene.active { display: block; }
@@ -309,7 +343,8 @@
       inset: 0;
       z-index: 600;
       pointer-events: none;
-      font-family: 'Share Tech Mono', monospace;}
+      font-family: 'Share Tech Mono', monospace;
+    }
 
     .hud-corner {
       position: absolute;
@@ -317,7 +352,8 @@
       height: 40px;
       border-color: var(--cyan);
       border-style: solid;
-      opacity: 0.6;}
+      opacity: 0.6;
+    }
 
     .hud-tl { top: 16px; left: 16px; border-width: 2px 0 0 2px; }
     .hud-tr { top: 16px; right: 16px; border-width: 2px 2px 0 0; }
@@ -333,19 +369,22 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: linear-gradient(180deg, rgba(2,8,16,0.8) 0%, transparent 100%);}
+      background: linear-gradient(180deg, rgba(2,8,16,0.8) 0%, transparent 100%);
+    }
 
     .ar-title {
       font-family: 'Orbitron', monospace;
       font-size: 0.75rem;
       font-weight: 700;
       color: var(--cyan);
-      letter-spacing: 0.2em;}
+      letter-spacing: 0.2em;
+    }
 
     .ar-status {
       font-size: 0.6rem;
       color: rgba(0,245,255,0.6);
-      letter-spacing: 0.15em;}
+      letter-spacing: 0.15em;
+    }
 
     #active-label {
       position: absolute;
@@ -360,7 +399,8 @@
       padding: 0.4rem 1.2rem;
       opacity: 0;
       transition: opacity 0.3s;
-      white-space: nowrap;}
+      white-space: nowrap;
+    }
 
     #active-label.visible { opacity: 1; }
 
@@ -371,7 +411,8 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      pointer-events: none;}
+      pointer-events: none;
+    }
 
     .mode-btn {
       width: 36px;
@@ -384,28 +425,33 @@
       justify-content: center;
       font-size: 16px;
       opacity: 0.4;
-      transition: opacity 0.2s, border-color 0.2s;}
+      transition: opacity 0.2s, border-color 0.2s;
+    }
 
     .mode-btn.active {
       opacity: 1;
       border-color: var(--cyan);
-      background: rgba(0,245,255,0.15);}
+      background: rgba(0,245,255,0.15);
+    }
 
     #interact-hint {
       position: absolute;
-      bottom: 110px;
+      bottom: 96px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(2,8,16,0.85);
       border: 1px solid var(--cyan-border);
       color: var(--cyan);
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      padding: 0.4rem 1rem;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      padding: 0.35rem 0.85rem;
       opacity: 0;
       transition: opacity 0.4s;
-      white-space: nowrap;
-      pointer-events: none;}
+      white-space: normal;
+      text-align: center;
+      max-width: calc(100vw - 2rem);
+      pointer-events: none;
+    }
 
     #interact-hint.visible { opacity: 1; }
 
@@ -419,13 +465,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 0.5rem;}
+      gap: 0.5rem;
+    }
 
     .ar-hint {
       font-size: 0.7rem;
       color: var(--text);
       letter-spacing: 0.1em;
-      text-align: center;}
+      text-align: center;
+    }
 
     .ar-hint strong { color: var(--cyan); }
 
@@ -436,32 +484,70 @@
       height: 2px;
       background: linear-gradient(90deg, transparent, var(--cyan), transparent);
       opacity: 0.4;
-      animation: scanBeam 3s ease-in-out infinite;}
+      animation: scanBeam 3s ease-in-out infinite;
+    }
 
     @keyframes scanBeam {
       0% { top: 20%; opacity: 0; }
       10% { opacity: 0.4; }
       90% { opacity: 0.4; }
-      100% { top: 80%; opacity: 0; }}
+      100% { top: 80%; opacity: 0; }
+    }
 
     .back-btn {
       position: absolute;
-      bottom: 5rem;
+      bottom: 2rem;
       left: 50%;
       transform: translateX(-50%);
-      padding: 0.75rem 2rem;
+      padding: 0.5rem 1.1rem;
       background: rgba(2,8,16,0.85);
       border: 1px solid var(--cyan-border);
       color: var(--cyan);
       font-family: 'Share Tech Mono', monospace;
-      font-size: 0.75rem;
-      letter-spacing: 0.15em;
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
       cursor: pointer;
       pointer-events: all;
       -webkit-appearance: none;
-      border-radius: 0;}
+      border-radius: 0;
+      line-height: 1;
+    }
 
     .back-btn:active { background: var(--cyan-dim); }
+
+    /* Optimalisatie: op kleine schermen schalen we de HUD compacter zodat knoppen en hints niet botsen. */
+    @media (max-width: 480px) {
+      .ar-topbar {
+        padding: 0.85rem 1rem 0.85rem 1.25rem;
+      }
+
+      #active-label {
+        top: 56px;
+        max-width: calc(100vw - 5rem);
+        white-space: normal;
+        text-align: center;
+      }
+
+      #interact-hint {
+        bottom: 84px;
+        font-size: 0.58rem;
+        padding: 0.3rem 0.7rem;
+      }
+
+      .ar-bottombar {
+        padding: 1rem 1rem 1.1rem;
+      }
+
+      .ar-hint {
+        font-size: 0.62rem;
+      }
+
+      .back-btn {
+        bottom: 1.35rem;
+        padding: 0.45rem 0.95rem;
+        font-size: 0.62rem;
+      }
+    }
   </style>
 </head>
 <body>
@@ -552,12 +638,13 @@
     const OBJECT_SCHAAL = 0.5;
     const OBJECT_MAX_SCHAAL = 5;
     const OBJECT_MIN_SCHAAL = 0.05;
-    const BEWEEG_SNELHEID = 1.5;
+    const BEWEEG_SNELHEID = 1.2;
     const ROTEER_SNELHEID = 0.75;
     const ROTATIE_TILT_SNELHEID = 0.14;
     const SMOOTHING = 0.18;
     const SCHAAL_DREMPEL = 3;
     const ROTATIE_DREMPEL = 0.8;
+    const MARKER_LOST_DELAY = 220;
 
     let models = [];
     let arReady = false;
@@ -570,6 +657,7 @@
     let activeMarkerId = null;
     let activeEntity = null;
     let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
+    const markerLostTimers = {};
 
     function createState() {
       return {
@@ -634,15 +722,18 @@
         syncObjectTransform(entity, { current });
       });
 
-      requestAnimationFrame(animateObjects);}
+      requestAnimationFrame(animateObjects);
+    }
 
     function startRenderLoop() {
       if (renderLoopStarted) return;
       renderLoopStarted = true;
-      requestAnimationFrame(animateObjects);}
+      requestAnimationFrame(animateObjects);
+    }
 
     function getTouchDistance(t1, t2) {
-      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);}
+      return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+    }
 
     function getTouchAngle(t1, t2) {
       return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
@@ -657,7 +748,22 @@
       hint.textContent = text;
       hint.classList.add('visible');
       clearTimeout(hint._timer);
-      hint._timer = setTimeout(() => hint.classList.remove('visible'), HINT_DUUR);}
+      hint._timer = setTimeout(() => hint.classList.remove('visible'), HINT_DUUR);
+    }
+
+    // Optimalisatie: centrale statusfunctie zodat fouten en succesmeldingen consistenter blijven.
+    function setStatus(text) {
+      document.getElementById('status-text').textContent = text;
+    }
+
+    // Optimalisatie: reset interactiestatus wanneer AR stopt of marker verloren gaat.
+    function resetInteractionState() {
+      touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
+      setModeIndicator(null);
+      document.getElementById('active-label').classList.remove('visible');
+      clearTimeout(document.getElementById('interact-hint')._timer);
+      document.getElementById('interact-hint').classList.remove('visible');
+    }
 
     function setModeIndicator(mode) {
       document.getElementById('mode-move').classList.toggle('active', mode === 'move');
@@ -758,11 +864,17 @@
     async function loadModels() {
       try {
         const res = await fetch('models.json?nocache=' + Date.now());
+        if (!res.ok) {
+          throw new Error('models.json kon niet geladen worden');
+        }
         models = await res.json();
+        if (!Array.isArray(models) || models.length === 0) {
+          throw new Error('models.json bevat geen geldige modellenlijst');
+        }
         setupLanding();
         setupARScene();
       } catch (e) {
-        document.getElementById('status-text').textContent = 'FOUT: MODELS.JSON NIET GEVONDEN';
+        setStatus('FOUT: MODELLEN NIET GELADEN');
       }
     }
 
@@ -798,6 +910,10 @@
         const asset = document.createElement('a-asset-item');
         asset.setAttribute('id', 'model-' + i);
         asset.setAttribute('src', name);
+        // Optimalisatie: model-load fouten worden zichtbaar gemaakt in plaats van stil te falen.
+        asset.addEventListener('error', () => {
+          setStatus('FOUT BIJ LADEN VAN MODEL: ' + name);
+        });
         assets.appendChild(asset);
 
         const marker = document.createElement('a-marker');
@@ -828,6 +944,7 @@
           .replace(/_ply/gi, '');
 
         marker.addEventListener('markerFound', () => {
+          clearTimeout(markerLostTimers['marker-' + i]);
           activeMarkerId = 'marker-' + i;
           activeEntity = entity;
           const label = document.getElementById('active-label');
@@ -837,24 +954,30 @@
         });
 
         marker.addEventListener('markerLost', () => {
-          if (activeMarkerId === 'marker-' + i) {
-            activeMarkerId = null;
-            activeEntity = null;}
-          document.getElementById('active-label').classList.remove('visible');
-          setModeIndicator(null);
+          // Optimalisatie: korte vertraging voorkomt flikkeren als AR.js de marker 1 frame kwijt is.
+          markerLostTimers['marker-' + i] = setTimeout(() => {
+            if (activeMarkerId === 'marker-' + i) {
+              activeMarkerId = null;
+              activeEntity = null;
+              resetInteractionState();
+            }
+          }, MARKER_LOST_DELAY);
         });
       });
 
       arReady = true;
-      startRenderLoop();}
+      startRenderLoop();
+    }
 
     function stopCamera() {
       const videos = document.querySelectorAll('video');
       videos.forEach((video) => {
         if (video.srcObject) {
           video.srcObject.getTracks().forEach((track) => track.stop());
-          video.srcObject = null;}
-      });}
+          video.srcObject = null;
+        }
+      });
+    }
 
     function startAR() {
       if (!arReady || arStarted) return;
@@ -866,27 +989,29 @@
         document.getElementById('loading-screen').classList.remove('active');
         document.getElementById('ar-scene').classList.add('active');
         setupTouchHandlers();
-      }, LAADSCHERM_DUUR);}
+        // Optimalisatie: extra feedback zodra de AR-weergave effectief zichtbaar is.
+        showHint('RICHT OP EEN BARCODE OM TE STARTEN');
+      }, LAADSCHERM_DUUR);
+    }
 
     function stopAR() {
       document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
-      document.getElementById('active-label').classList.remove('visible');
-      setModeIndicator(null);
       activeMarkerId = null;
       activeEntity = null;
       arStarted = false;
-      stopCamera();}
+      Object.keys(markerLostTimers).forEach((key) => clearTimeout(markerLostTimers[key]));
+      resetInteractionState();
+      stopCamera();
+    }
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         stopCamera();
-      }
-    });
+      }});
 
     window.addEventListener('beforeunload', stopCamera);
     window.addEventListener('pagehide', stopCamera);
-
     loadModels();
   </script>
 </body>
