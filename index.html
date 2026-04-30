@@ -495,9 +495,9 @@
 
     .back-btn {
       position: absolute;
-      bottom: 2rem;
-      left: 50%;
-      transform: translateX(-50%);
+      top: 4.7rem;
+      left: 1rem;
+      transform: none;
       padding: 0.5rem 1.1rem;
       background: rgba(2,8,16,0.85);
       border: 1px solid var(--cyan-border);
@@ -542,7 +542,8 @@
       }
 
       .back-btn {
-        bottom: 1rem;
+        top: 4.2rem;
+        left: 0.85rem;
         padding: 0.45rem 0.95rem;
         font-size: 0.62rem;
       }
@@ -637,13 +638,15 @@
     const OBJECT_SCHAAL = 0.5;
     const OBJECT_MAX_SCHAAL = 5;
     const OBJECT_MIN_SCHAAL = 0.05;
-    const BEWEEG_SNELHEID = 1.2;
+    const BEWEEG_BEREIK_X = 3.2;
+    const BEWEEG_BEREIK_Z = 3.2;
     const ROTEER_SNELHEID = 0.75;
     const ROTATIE_TILT_SNELHEID = 0.14;
     const SMOOTHING = 0.18;
     const SCHAAL_DREMPEL = 3;
     const ROTATIE_DREMPEL = 0.8;
     const MARKER_LOST_DELAY = 220;
+    const LONG_PRESS_DUUR = 650;
 
     let models = [];
     let arReady = false;
@@ -657,21 +660,24 @@
     let activeEntity = null;
     let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
     const markerLostTimers = {};
+    let longPressTimer = null;
 
-    function createState() {
-      return {
-        current: {
-          scale: OBJECT_SCHAAL,
-          rotX: 0, rotY: 0, rotZ: 0,
-          posX: 0, posY: 0, posZ: 0
-        },
-        target: {
-          scale: OBJECT_SCHAAL,
-          rotX: 0, rotY: 0, rotZ: 0,
-          posX: 0, posY: 0, posZ: 0
-        }
-      };
-    }
+      function createState() {
+        return {
+          current: {
+            scale: OBJECT_SCHAAL,
+            rotX: 0, rotY: 0, rotZ: 0,
+            posX: 0, posY: 0, posZ: 0,
+            locked: false
+          },
+          target: {
+            scale: OBJECT_SCHAAL,
+            rotX: 0, rotY: 0, rotZ: 0,
+            posX: 0, posY: 0, posZ: 0,
+            locked: false
+          }
+        };
+      }
 
     function getState(markerId) {
       if (!objectStates[markerId]) {
@@ -758,10 +764,34 @@
     // Optimalisatie: reset interactiestatus wanneer AR stopt of marker verloren gaat.
     function resetInteractionState() {
       touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
+      clearTimeout(longPressTimer);
       setModeIndicator(null);
       document.getElementById('active-label').classList.remove('visible');
       clearTimeout(document.getElementById('interact-hint')._timer);
       document.getElementById('interact-hint').classList.remove('visible');
+    }
+
+    // Optimalisatie: directe mapping van schermpositie naar het marker-vlak.
+    // Daardoor kun je veel sneller naar de hoeken van het bruikbare AR-gebied slepen.
+    function mapTouchToMarkerPlane(x, y) {
+      const normalizedX = clamp((x / window.innerWidth) * 2 - 1, -1, 1);
+      const normalizedY = clamp((y / window.innerHeight) * 2 - 1, -1, 1);
+      return {
+        posX: normalizedX * BEWEEG_BEREIK_X,
+        posZ: normalizedY * BEWEEG_BEREIK_Z
+      };
+    }
+
+    // Optimalisatie: long press vergrendelt het object op zijn huidige marker-positie.
+    // Dit is GEEN echte world anchor; zonder continue markertracking kan AR.js het object
+    // niet vast in de kamer laten staan wanneer de marker niet meer zichtbaar is.
+    function toggleObjectLock() {
+      if (!activeMarkerId) return;
+      const state = getState(activeMarkerId);
+      const nextLocked = !state.target.locked;
+      state.target.locked = nextLocked;
+      state.current.locked = nextLocked;
+      showHint(nextLocked ? 'OBJECT VERGRENDELD' : 'OBJECT ONTGRENDELD');
     }
 
     function setModeIndicator(mode) {
@@ -785,7 +815,14 @@
           touch.mode = 'move';
           setModeIndicator('move');
           showHint('SLEPEN OM TE VERPLAATSEN');
+          clearTimeout(longPressTimer);
+          longPressTimer = setTimeout(() => {
+            if (activeEntity && activeMarkerId && touch.mode === 'move') {
+              toggleObjectLock();
+            }
+          }, LONG_PRESS_DUUR);
         } else if (e.touches.length === 2) {
+          clearTimeout(longPressTimer);
           touch.prevDist = getTouchDistance(e.touches[0], e.touches[1]);
           touch.prevAngle = getTouchAngle(e.touches[0], e.touches[1]);
           touch.prevMid = getTouchMidpoint(e.touches[0], e.touches[1]);
@@ -801,14 +838,22 @@
         const state = getState(activeMarkerId);
 
         if (e.touches.length === 1 && touch.mode === 'move' && touch.prev) {
-          const dx = (e.touches[0].clientX - touch.prev.x) / window.innerWidth;
-          const dy = (e.touches[0].clientY - touch.prev.y) / window.innerHeight;
+          const movedX = Math.abs(e.touches[0].clientX - touch.prev.x);
+          const movedY = Math.abs(e.touches[0].clientY - touch.prev.y);
+          if (movedX > 8 || movedY > 8) {
+            clearTimeout(longPressTimer);
+          }
 
-          state.target.posX += dx * BEWEEG_SNELHEID;
-          state.target.posZ += dy * BEWEEG_SNELHEID;
+          if (!state.target.locked) {
+            const planePosition = mapTouchToMarkerPlane(e.touches[0].clientX, e.touches[0].clientY);
+            state.target.posX = planePosition.posX;
+            state.target.posZ = planePosition.posZ;
+          }
 
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         } else if (e.touches.length === 2 && touch.prevMid) {
+          clearTimeout(longPressTimer);
+          if (state.target.locked) return;
           const curDist = getTouchDistance(e.touches[0], e.touches[1]);
           const curAngle = getTouchAngle(e.touches[0], e.touches[1]);
           const curMid = getTouchMidpoint(e.touches[0], e.touches[1]);
@@ -846,6 +891,7 @@
       }, { passive: false });
 
       arContainer.addEventListener('touchend', (e) => {
+        clearTimeout(longPressTimer);
         if (e.touches.length === 0) {
           touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
           setModeIndicator(null);
@@ -1010,12 +1056,14 @@
       // Optimalisatie: stop de camera hier niet, want AR.js start die niet altijd netjes opnieuw op.
       if (scene && typeof scene.pause === 'function') {
         scene.pause();
-      }}
+      }
+    }
 
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         stopCamera();
-      }});
+      }
+    });
 
     window.addEventListener('beforeunload', stopCamera);
     window.addEventListener('pagehide', stopCamera);
