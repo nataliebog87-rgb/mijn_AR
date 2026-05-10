@@ -1,3 +1,6 @@
+/* KLEURENPALET
+   Centrale CSS-variabelen voor de look van de site.
+   Veilig aanpasbaar: kleuren, contrast en algemene sfeer. */
 :root {
   --cyan: #00f5ff;
   --cyan-dim: rgba(0, 245, 255, 0.15);
@@ -7,6 +10,8 @@
   --grid: rgba(0, 245, 255, 0.04);
 }
 
+/* BASISLAYOUT
+   Zorgt ervoor dat de pagina fullscreen werkt op mobiel en desktop. */
 html, body {
   margin: 0;
   padding: 0;
@@ -20,6 +25,8 @@ html, body {
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 body { background: var(--bg); }
 
+/* LANDING PAGE
+   Het eerste scherm dat de gebruiker ziet voor de AR-modus gestart wordt. */
 #landing {
   position: fixed;
   inset: 0;
@@ -34,6 +41,7 @@ body { background: var(--bg); }
   font-family: "Share Tech Mono", monospace;
 }
 
+/* Achtergrondanimatie voor de landing page */
 #landing::before {
   content: "";
   position: absolute;
@@ -50,6 +58,7 @@ body { background: var(--bg); }
   100% { transform: translateY(40px); }
 }
 
+/* Glow-effect achter de inhoud op de landing page */
 #landing::after {
   content: "";
   position: absolute;
@@ -65,6 +74,7 @@ body { background: var(--bg); }
   50% { transform: scale(1.2); opacity: 1; }
 }
 
+/* Container die alle inhoud van de landing page centreert */
 .landing-content {
   position: relative;
   z-index: 2;
@@ -127,6 +137,7 @@ body { background: var(--bg); }
   animation: fadeUp 0.8s ease forwards 0.6s;
 }
 
+/* Modellijst wordt dynamisch ingevuld door JavaScript */
 #model-list {
   margin-bottom: 1.5rem;
   opacity: 0;
@@ -224,6 +235,7 @@ body { background: var(--bg); }
 
 .instruction strong { color: var(--cyan); }
 
+/* Algemene knopstijl voor start-, reset- en terugknoppen */
 .cta-btn, .secondary-btn, .back-btn {
   -webkit-appearance: none;
   border-radius: 0;
@@ -286,6 +298,8 @@ body { background: var(--bg); }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* LAADSCHERM
+   Tijdelijke tussenstap tussen landing page en AR-weergave. */
 #loading-screen {
   display: none;
   position: fixed;
@@ -325,6 +339,9 @@ body { background: var(--bg); }
   letter-spacing: 0.15em;
 }
 
+/* AR-SCENE EN HUD
+   #ar-scene bevat de echte camera/3D scene.
+   #ar-ui is de overlay bovenop het camerabeeld. */
 #ar-scene { display: none; position: fixed; inset: 0; z-index: 500; }
 #ar-scene.active { display: block; }
 
@@ -376,6 +393,7 @@ body { background: var(--bg); }
   letter-spacing: 0.15em;
 }
 
+/* Label dat getoond wordt wanneer een model gedetecteerd is */
 #active-label {
   position: absolute;
   top: 60px;
@@ -424,6 +442,7 @@ body { background: var(--bg); }
   background: rgba(0,245,255,0.15);
 }
 
+/* Hint-tekst die tijdelijk instructies geeft tijdens interactie */
 #interact-hint {
   position: absolute;
   bottom: 124px;
@@ -445,6 +464,7 @@ body { background: var(--bg); }
 
 #interact-hint.visible { opacity: 1; }
 
+/* Onderste statusbalk in AR */
 .ar-bottombar {
   position: absolute;
   bottom: 0;
@@ -484,6 +504,8 @@ body { background: var(--bg); }
   100% { top: 80%; opacity: 0; }
 }
 
+/* Actieknoppen in AR:
+   reset links, terug rechts. */
 .ar-controls {
   position: absolute;
   top: 4.4rem;
@@ -513,6 +535,7 @@ body { background: var(--bg); }
   background: var(--cyan-dim);
 }
 
+/* Mobiele optimalisatie voor kleinere schermen */
 @media (max-width: 480px) {
   .ar-topbar {
     padding: 0.85rem 1rem 0.85rem 1.25rem;

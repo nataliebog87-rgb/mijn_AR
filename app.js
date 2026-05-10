@@ -1,8 +1,10 @@
+// INSTELBARE PARAMETERS
+// Dit zijn de belangrijkste waarden om gedrag en gevoel van de AR-site te tunen.
 const LAADSCHERM_DUUR = 1500;
 const HINT_DUUR = 1800;
-const OBJECT_SCHAAL = 500;
-const OBJECT_MAX_SCHAAL = 50000;
-const OBJECT_MIN_SCHAAL = 100;
+const OBJECT_SCHAAL = 100;
+const OBJECT_MAX_SCHAAL = 500;
+const OBJECT_MIN_SCHAAL = 10;
 const BEWEEG_BEREIK_X = 3.2;
 const BEWEEG_BEREIK_Z = 3.2;
 const ROTEER_SNELHEID = 0.75;
@@ -19,6 +21,8 @@ const MARKER_LOST_DELAY = 220;
 const MARKER_KWIJT_DUUR = 1200;
 const ASSET_CACHE_BUSTER = Date.now();
 
+// RUNTIME STATE
+// Houdt bij welke modellen geladen zijn en welke AR-status momenteel actief is.
 let models = [];
 let arReady = false;
 let arStarted = false;
@@ -33,6 +37,10 @@ let activeEntity = null;
 let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null, prevTouches: null };
 const markerLostTimers = {};
 
+// createState:
+// Maakt de standaardtoestand van een object aan.
+// current = wat nu zichtbaar is
+// target = waar het object naartoe beweegt
 function createState() {
   return {
     current: {
@@ -49,6 +57,8 @@ function createState() {
   };
 }
 
+// getState:
+// Geeft de toestand van een bepaald markerobject terug en maakt die indien nodig aan.
 function getState(markerId) {
   if (!objectStates[markerId]) {
     objectStates[markerId] = createState();
@@ -56,14 +66,21 @@ function getState(markerId) {
   return objectStates[markerId];
 }
 
+// clamp:
+// Houdt een waarde tussen minimum en maximum.
 function clamp(value, min, max) {
   return Math.min(max, Math.max(min, value));
 }
 
+// lerp:
+// Lineaire interpolatie tussen current en target.
+// Hierdoor verlopen bewegingen vloeiender en minder schokkerig.
 function lerp(current, target, factor) {
   return current + (target - current) * factor;
 }
 
+// normalizeAngleDelta:
+// Voorkomt rotatiesprongen rond -180 / 180 graden.
 function normalizeAngleDelta(delta) {
   let normalized = delta;
   while (normalized > 180) normalized -= 360;
@@ -71,6 +88,9 @@ function normalizeAngleDelta(delta) {
   return normalized;
 }
 
+// syncObjectTransform:
+// Zet positie, rotatie en schaal effectief op het Three.js object van A-Frame.
+// Dit is kernlogica van de 3D-transformatie.
 function syncObjectTransform(entity, state) {
   if (!entity || !entity.object3D) return;
   entity.object3D.position.set(state.current.posX, state.current.posY, state.current.posZ);
@@ -82,6 +102,8 @@ function syncObjectTransform(entity, state) {
   entity.object3D.scale.set(state.current.scale, state.current.scale, state.current.scale);
 }
 
+// animateObjects:
+// Loopt continu via requestAnimationFrame en laat current naar target bewegen.
 function animateObjects() {
   Object.values(objectStates).forEach(({ entity, current, target }) => {
     if (!entity) return;
@@ -100,12 +122,16 @@ function animateObjects() {
   requestAnimationFrame(animateObjects);
 }
 
+// startRenderLoop:
+// Zorgt dat de animatielus slechts één keer opstart.
 function startRenderLoop() {
   if (renderLoopStarted) return;
   renderLoopStarted = true;
   requestAnimationFrame(animateObjects);
 }
 
+// TOUCH HULPFUNCTIES
+// Nodig om pinch, rotatie en 2-vinger bewegingen te interpreteren.
 function getTouchDistance(t1, t2) {
   return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
 }
@@ -118,6 +144,8 @@ function getTouchMidpoint(t1, t2) {
   return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
 }
 
+// showHint:
+// Toont tijdelijk instructietekst in de AR-overlay.
 function showHint(text, duration = HINT_DUUR) {
   const hint = document.getElementById("interact-hint");
   hint.textContent = text;
@@ -126,10 +154,14 @@ function showHint(text, duration = HINT_DUUR) {
   hint._timer = setTimeout(() => hint.classList.remove("visible"), duration);
 }
 
+// setStatus:
+// Centrale functie om meldingen op de landing page te tonen.
 function setStatus(text) {
   document.getElementById("status-text").textContent = text;
 }
 
+// resetInteractionState:
+// Wist tijdelijke touch- en HUD-status wanneer AR stopt of een marker verloren gaat.
 function resetInteractionState() {
   touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null, prevTouches: null };
   setModeIndicator(null);
@@ -138,6 +170,9 @@ function resetInteractionState() {
   document.getElementById("interact-hint").classList.remove("visible");
 }
 
+// getPointOnMarkerPlane:
+// Projecteert een schermpunt naar het vlak van de actieve marker.
+// Hierdoor kan het object de vinger veel accurater volgen.
 function getPointOnMarkerPlane(markerEl, clientX, clientY) {
   const sceneEl = document.getElementById("ar-scene-el");
   if (!sceneEl || !sceneEl.camera || !markerEl || !markerEl.object3D) return null;
@@ -168,6 +203,9 @@ function getPointOnMarkerPlane(markerEl, clientX, clientY) {
   };
 }
 
+// centerObjectState:
+// Zet het object op het punt van het markervlak dat overeenkomt met het schermcentrum.
+// Dit maakt de centrering toestel-onafhankelijk.
 function centerObjectState(state, markerEl) {
   const centerPoint = getPointOnMarkerPlane(markerEl, window.innerWidth / 2, window.innerHeight / 2);
   const posX = centerPoint ? centerPoint.posX : 0;
@@ -182,6 +220,9 @@ function centerObjectState(state, markerEl) {
   state.target.posZ = posZ;
 }
 
+// centerModelPivot:
+// Verplaatst het GLB-model intern zodat zijn visuele middelpunt overeenkomt met de entity-origin.
+// Handig als het model zelf met een slechte pivot geëxporteerd werd.
 function centerModelPivot(entity) {
   const mesh = entity.getObject3D("mesh");
   if (!mesh || mesh.userData.pivotCentered) return;
@@ -196,6 +237,9 @@ function centerModelPivot(entity) {
   mesh.userData.pivotCentered = true;
 }
 
+// getDirectionSimilarity:
+// Vergelijkt of twee vingers ongeveer in dezelfde richting bewegen.
+// Zo maken we beter onderscheid tussen pinch en rotatie.
 function getDirectionSimilarity(deltaA, deltaB) {
   const lenA = Math.hypot(deltaA.x, deltaA.y);
   const lenB = Math.hypot(deltaB.x, deltaB.y);
@@ -203,6 +247,9 @@ function getDirectionSimilarity(deltaA, deltaB) {
   return ((deltaA.x * deltaB.x) + (deltaA.y * deltaB.y)) / (lenA * lenB);
 }
 
+// isTouchOnActiveObject:
+// Controleert via raycasting of de gebruiker echt op het 3D-object tikt.
+// Slepen start dus niet als je gewoon ergens op het scherm raakt.
 function isTouchOnActiveObject(touchPoint) {
   const sceneEl = document.getElementById("ar-scene-el");
   const activeState = activeMarkerId ? getState(activeMarkerId) : null;
@@ -224,12 +271,16 @@ function isTouchOnActiveObject(touchPoint) {
   return raycaster.intersectObjects(meshes, true).length > 0;
 }
 
+// setModeIndicator:
+// Laat visueel zien of de gebruiker aan het verplaatsen, schalen of roteren is.
 function setModeIndicator(mode) {
   document.getElementById("mode-move").classList.toggle("active", mode === "move");
   document.getElementById("mode-scale").classList.toggle("active", mode === "scale");
   document.getElementById("mode-rotate").classList.toggle("active", mode === "rotate");
 }
 
+// resetActiveObject:
+// Zet schaal, rotatie en positie van het actieve object terug naar de beginstand.
 function resetActiveObject() {
   if (!activeMarkerId || !activeMarkerEl || !activeEntity) return;
   const state = getState(activeMarkerId);
@@ -246,6 +297,11 @@ function resetActiveObject() {
   showHint("OBJECT GERSET");
 }
 
+// setupTouchHandlers:
+// Hoofdlogica voor touch-interactie:
+// - 1 vinger = verplaatsen
+// - 2 vingers ver uit elkaar = pinch-schalen
+// - 2 vingers dichter bij elkaar en in dezelfde richting = roteren
 function setupTouchHandlers() {
   if (touchHandlersReady) return;
   touchHandlersReady = true;
@@ -369,6 +425,9 @@ function setupTouchHandlers() {
   }, { passive: false });
 }
 
+// loadModels:
+// Haalt models.json op. Dat bestand bepaalt welke GLB-modellen de website kent.
+// Dankzij de cache-buster wordt steeds de recentste versie gevraagd.
 async function loadModels() {
   try {
     const res = await fetch(`models.json?nocache=${ASSET_CACHE_BUSTER}`);
@@ -384,6 +443,9 @@ async function loadModels() {
   }
 }
 
+// setupLanding:
+// Vult de landing page dynamisch met objectnamen en barcode-indexen.
+// Belangrijk: index i van een model wordt barcode i.
 function setupLanding() {
   const list = document.getElementById("model-list");
   const count = document.getElementById("model-count");
@@ -406,6 +468,12 @@ function setupLanding() {
   setStatus("SYSTEEM GEREED - CAMERA VEREIST");
 }
 
+// setupARScene:
+// Bouwt voor elk model:
+// - een asset
+// - een barcode-marker
+// - een A-Frame entity
+// Dit is de kernfunctie van de marker-gebaseerde AR-werking.
 function setupARScene() {
   const assets = document.getElementById("ar-assets");
   const scene = document.getElementById("ar-scene-el");
@@ -496,6 +564,8 @@ function setupARScene() {
   startRenderLoop();
 }
 
+// stopCamera:
+// Stopt de echte camerastream wanneer de pagina verborgen wordt of sluit.
 function stopCamera() {
   const videos = document.querySelectorAll("video");
   videos.forEach((video) => {
@@ -506,6 +576,8 @@ function stopCamera() {
   });
 }
 
+// startAR:
+// Wisselt van landing page naar AR-weergave en hervat de scene.
 function startAR() {
   if (!arReady || arStarted) return;
   arStarted = true;
@@ -524,6 +596,8 @@ function startAR() {
   }, LAADSCHERM_DUUR);
 }
 
+// setupBackButton:
+// Maakt de terugknop robuust door eigen click/touch handlers te registreren.
 function setupBackButton() {
   const backBtn = document.getElementById("back-btn");
   if (!backBtn || backBtn._bound) return;
@@ -539,6 +613,8 @@ function setupBackButton() {
   backBtn.addEventListener("touchstart", handleBack, { passive: false });
 }
 
+// setupResetButton:
+// Bindt de resetknop zodat de gebruiker het actieve object kan resetten.
 function setupResetButton() {
   const resetBtn = document.getElementById("reset-btn");
   if (!resetBtn || resetBtn._bound) return;
@@ -554,6 +630,8 @@ function setupResetButton() {
   resetBtn.addEventListener("touchstart", handleReset, { passive: false });
 }
 
+// stopAR:
+// Sluit de AR-view, toont de landing page opnieuw en reset actieve status.
 function stopAR() {
   const scene = document.getElementById("ar-scene-el");
   document.getElementById("ar-scene").classList.remove("active");
@@ -569,6 +647,8 @@ function stopAR() {
   }
 }
 
+// PAGE LIFECYCLE
+// Zorgt dat de camera gestopt wordt wanneer de pagina verdwijnt.
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) stopCamera();
 });
@@ -576,6 +656,8 @@ document.addEventListener("visibilitychange", () => {
 window.addEventListener("beforeunload", stopCamera);
 window.addEventListener("pagehide", stopCamera);
 
+// INIT
+// Bindt UI-events en laadt daarna de modellen.
 document.getElementById("start-btn").addEventListener("click", startAR);
 setupBackButton();
 setupResetButton();

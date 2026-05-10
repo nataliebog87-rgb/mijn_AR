@@ -8,21 +8,39 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
+  <!-- EXTERNE LIBRARIES
+       - A-Frame bouwt de 3D scene op
+       - AR.js doet de markertracking via de camera
+       Deze scripts zijn essentieel voor de AR-werking. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <!-- OPSPLITSING VAN DE CODE
+       - styles.css bevat alle styling
+       - app.js bevat alle logica
+       Zo blijft de code overzichtelijker zonder functionaliteit te verliezen. -->
   <link rel="stylesheet" href="styles.css" />
   <script src="app.js" defer></script>
 </head>
 <body>
+  <!-- HTML-STRUCTUUR
+       De pagina heeft 3 grote delen:
+       1. landing page
+       2. laadscherm
+       3. AR-scene met HUD-overlay -->
   <div id="landing">
     <div class="landing-content">
+      <!-- LANDING CONTENT
+           Startinterface met titel, objectlijst, uitleg en startknop. -->
       <div class="scan-line"></div>
       <div class="label">// AUGMENTED REALITY EXPERIENCE</div>
       <h1 class="title">AR<span>_</span>VIEW</h1>
       <p class="subtitle" id="model-count">MODELLEN LADEN...</p>
+      <!-- Wordt via JavaScript opgevuld vanuit models.json -->
       <div id="model-list"></div>
 
+      <!-- Uitleg van de touch-bediening -->
       <div class="interact-row">
         <div class="interact-item">
           <span class="interact-icon">☝️</span>
@@ -60,12 +78,17 @@
     </div>
   </div>
 
+  <!-- LAADSCHERM
+       Wordt kort getoond terwijl de camera-interface opstart. -->
   <div id="loading-screen">
     <div class="loader-ring"></div>
     <div class="loader-text">CAMERA INITIALISEREN</div>
     <div class="loader-sub">even geduld...</div>
   </div>
 
+  <!-- AR-SCENE
+       Hierin staat de echte A-Frame / AR.js omgeving.
+       De markers en modellen worden later via JavaScript toegevoegd. -->
   <div id="ar-scene">
     <a-scene
       id="ar-scene-el"
@@ -77,6 +100,8 @@
       <a-entity camera></a-entity>
     </a-scene>
 
+    <!-- HUD / OVERLAY
+         Visuele laag boven op het camerabeeld. -->
     <div id="ar-ui">
       <div class="hud-corner hud-tl"></div>
       <div class="hud-corner hud-tr"></div>
@@ -103,6 +128,7 @@
         <div class="ar-hint">Richt op een <strong>BARCODE</strong> om het object te zien</div>
       </div>
 
+      <!-- Actieknoppen tijdens AR -->
       <div class="ar-controls">
         <button class="secondary-btn" id="reset-btn">RESET OBJECT</button>
         <button class="back-btn" id="back-btn">← TERUG</button>
