@@ -1,7 +1,7 @@
 // INSTELBARE PARAMETERS
 // Dit zijn de belangrijkste waarden om gedrag en gevoel van de AR-site te tunen.
 const LAADSCHERM_DUUR = 1500;
-const HINT_DUUR = 1800;
+const HINT_DUUR = 1500;
 const OBJECT_SCHAAL = 150;
 const OBJECT_MAX_SCHAAL = 500;
 const OBJECT_MIN_SCHAAL = 50;
@@ -20,7 +20,7 @@ const SAME_DIRECTION_DREMPEL = 0.75;
 const MARKER_LOST_DELAY = 220;
 const MARKER_KWIJT_DUUR = 1200;
 const BARCODE_HINT_DELAY = 30000;
-const MODEL_GEVONDEN_DUUR = 10000;
+const MODEL_GEVONDEN_DUUR = 1000;
 const ASSET_CACHE_BUSTER = Date.now();
 
 // RUNTIME STATE
