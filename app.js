@@ -2,9 +2,9 @@
 // Dit zijn de belangrijkste waarden om gedrag en gevoel van de AR-site te tunen.
 const LAADSCHERM_DUUR = 1500;
 const HINT_DUUR = 1800;
-const OBJECT_SCHAAL = 10;
-const OBJECT_MAX_SCHAAL = 100;
-const OBJECT_MIN_SCHAAL = 1;
+const OBJECT_SCHAAL = 500;
+const OBJECT_MAX_SCHAAL = 50000;
+const OBJECT_MIN_SCHAAL = 100;
 const BEWEEG_BEREIK_X = 3.2;
 const BEWEEG_BEREIK_Z = 3.2;
 const ROTEER_SNELHEID = 0.75;
@@ -19,6 +19,8 @@ const ROTATE_MOVE_DREMPEL = 6;
 const SAME_DIRECTION_DREMPEL = 0.75;
 const MARKER_LOST_DELAY = 220;
 const MARKER_KWIJT_DUUR = 1200;
+const BARCODE_HINT_DELAY = 30000;
+const MODEL_GEVONDEN_DUUR = 10000;
 const ASSET_CACHE_BUSTER = Date.now();
 
 // RUNTIME STATE
@@ -36,6 +38,7 @@ let activeMarkerEl = null;
 let activeEntity = null;
 let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null, prevTouches: null };
 const markerLostTimers = {};
+let barcodeHintTimer = null;
 
 // createState:
 // Maakt de standaardtoestand van een object aan.
@@ -158,6 +161,25 @@ function showHint(text, duration = HINT_DUUR) {
 // Centrale functie om meldingen op de landing page te tonen.
 function setStatus(text) {
   document.getElementById("status-text").textContent = text;
+}
+
+function setBarcodeHintVisible(visible) {
+  document.querySelector(".ar-hint").classList.toggle("visible", visible);
+}
+
+function clearBarcodeHintTimer() {
+  clearTimeout(barcodeHintTimer);
+  barcodeHintTimer = null;
+}
+
+function scheduleBarcodeHint() {
+  clearBarcodeHintTimer();
+  setBarcodeHintVisible(false);
+  barcodeHintTimer = setTimeout(() => {
+    if (!activeMarkerId && arStarted) {
+      setBarcodeHintVisible(true);
+    }
+  }, BARCODE_HINT_DELAY);
 }
 
 // resetInteractionState:
@@ -530,6 +552,8 @@ function setupARScene() {
 
     marker.addEventListener("markerFound", () => {
       clearTimeout(markerLostTimers[`marker-${i}`]);
+      clearBarcodeHintTimer();
+      setBarcodeHintVisible(false);
       activeMarkerId = `marker-${i}`;
       activeMarkerEl = marker;
       activeEntity = entity;
@@ -544,7 +568,7 @@ function setupARScene() {
       const label = document.getElementById("active-label");
       label.textContent = `▸ ${cleanName.toUpperCase()} GEVONDEN`;
       label.classList.add("visible");
-      showHint(state.loaded ? "OBJECT GEVONDEN - SLEEP OF PINCH" : "MODEL WORDT GELADEN...");
+      showHint(state.loaded ? "OBJECT GEVONDEN - SLEEP OF PINCH" : "MODEL WORDT GELADEN...", MODEL_GEVONDEN_DUUR);
     });
 
     marker.addEventListener("markerLost", () => {
@@ -555,6 +579,7 @@ function setupARScene() {
           activeEntity = null;
           resetInteractionState();
           showHint("MARKER KWIJT", MARKER_KWIJT_DUUR);
+          scheduleBarcodeHint();
         }
       }, MARKER_LOST_DELAY);
     });
@@ -592,7 +617,7 @@ function startAR() {
       scene.play();
     }
     setupTouchHandlers();
-    showHint("RICHT OP EEN BARCODE OM TE STARTEN");
+    scheduleBarcodeHint();
   }, LAADSCHERM_DUUR);
 }
 
@@ -641,6 +666,8 @@ function stopAR() {
   activeEntity = null;
   arStarted = false;
   Object.keys(markerLostTimers).forEach((key) => clearTimeout(markerLostTimers[key]));
+  clearBarcodeHintTimer();
+  setBarcodeHintVisible(false);
   resetInteractionState();
   if (scene && typeof scene.pause === "function") {
     scene.pause();

@@ -483,25 +483,14 @@ body { background: var(--bg); }
   color: var(--text);
   letter-spacing: 0.1em;
   text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .ar-hint strong { color: var(--cyan); }
 
-.scan-beam {
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-  opacity: 0.4;
-  animation: scanBeam 3s ease-in-out infinite;
-}
-
-@keyframes scanBeam {
-  0% { top: 20%; opacity: 0; }
-  10% { opacity: 0.4; }
-  90% { opacity: 0.4; }
-  100% { top: 80%; opacity: 0; }
+.ar-hint.visible {
+  opacity: 1;
 }
 
 /* Actieknoppen in AR:
