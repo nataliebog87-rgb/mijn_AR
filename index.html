@@ -893,47 +893,14 @@
     }
 
     // centerObjectState:
-    // zet het object op het punt van het markervlak dat overeenkomt met het midden van het scherm.
-    // Daardoor blijft "midden van het scherm" toestel-onafhankelijk berekend.
-    function centerObjectState(state, markerEl) {
-      const centerPoint = getPointOnMarkerPlane(markerEl, window.innerWidth / 2, window.innerHeight / 2);
-      const posX = centerPoint ? centerPoint.posX : 0;
-      const posY = centerPoint ? centerPoint.posY : 0;
-      const posZ = centerPoint ? centerPoint.posZ : 0;
-
-      state.current.posX = posX;
-      state.current.posY = posY;
-      state.current.posZ = posZ;
-      state.target.posX = posX;
-      state.target.posY = posY;
-      state.target.posZ = posZ;
-    }
-
-    // centerModelPivot:
-    // verplaatst het interne GLB-model zodat zijn visuele middelpunt samenvalt met de entity-origin.
-    // Dit helpt om het object echt centraal te laten verschijnen, ook als de mesh een rare pivot heeft.
-    function centerModelPivot(entity) {
-      const mesh = entity.getObject3D('mesh');
-      if (!mesh || mesh.userData.pivotCentered) return;
-
-      const box = new THREE.Box3().setFromObject(mesh);
-      if (box.isEmpty()) return;
-
-      const center = box.getCenter(new THREE.Vector3());
-      mesh.worldToLocal(center);
-      mesh.position.sub(center);
-      mesh.updateMatrixWorld(true);
-      mesh.userData.pivotCentered = true;
-    }
-
-    // getDirectionSimilarity:
-    // vergelijkt of twee vingers ongeveer in dezelfde richting bewegen.
-    // Nuttig om pinch te onderscheiden van een 2-vinger draaibeweging.
-    function getDirectionSimilarity(deltaA, deltaB) {
-      const lenA = Math.hypot(deltaA.x, deltaA.y);
-      const lenB = Math.hypot(deltaB.x, deltaB.y);
-      if (!lenA || !lenB) return 0;
-      return ((deltaA.x * deltaB.x) + (deltaA.y * deltaB.y)) / (lenA * lenB);
+    // zet de positie van een object terug op het lokale midden van de marker.
+    function centerObjectState(state) {
+      state.current.posX = 0;
+      state.current.posY = 0;
+      state.current.posZ = 0;
+      state.target.posX = 0;
+      state.target.posY = 0;
+      state.target.posZ = 0;
     }
     
     // setModeIndicator:
@@ -1177,12 +1144,8 @@
           activeMarkerId = 'marker-' + i;
           activeMarkerEl = marker;
           activeEntity = entity;
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              centerObjectState(state, marker);
-              syncObjectTransform(entity, state);
-            });
-          });
+          centerObjectState(state);
+          syncObjectTransform(entity, state);
           const label = document.getElementById('active-label');
           label.textContent = '▸ ' + cleanName.toUpperCase() + ' GEVONDEN';
           label.classList.add('visible');
