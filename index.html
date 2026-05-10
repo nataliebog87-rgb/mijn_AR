@@ -7,10 +7,18 @@
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <!-- Externe libraries:
+       - A-Frame bouwt de 3D scene op
+       - AR.js doet de markertracking via de camera
+       Deze imports zijn functioneel belangrijk en pas je best niet zomaar aan. -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
+
+
+    /* KLEURENPALET
+       Veilig aanpasbaar: hiermee verander je de algemene look van de interface. */
     :root {
       --cyan: #00f5ff;
       --cyan-dim: rgba(0, 245, 255, 0.15);
@@ -33,6 +41,8 @@
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body { background: var(--bg); }
 
+    /* LANDING PAGE
+       Het startscherm vóór de camera en AR-weergave geactiveerd worden. */
     #landing {
       position: fixed;
       inset: 0;
@@ -140,6 +150,8 @@
       animation: fadeUp 0.8s ease forwards 0.6s;
     }
 
+    /* MODELLIJST
+       Wordt via JavaScript gevuld op basis van models.json. */
     #model-list {
       margin-bottom: 1.5rem;
       opacity: 0;
@@ -295,6 +307,8 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    /* LAADSCHERM
+       Tijdelijke tussenstap tussen landing page en de AR-view. */
     #loading-screen {
       display: none;
       position: fixed;
@@ -334,6 +348,9 @@
       letter-spacing: 0.15em;
     }
 
+    /* AR SCENE + HUD
+       #ar-scene bevat de echte A-Frame/AR.js scene.
+       #ar-ui is de overlay bovenop de camera. */
     #ar-scene { display: none; position: fixed; inset: 0; z-index: 500; }
     #ar-scene.active { display: block; }
 
@@ -467,12 +484,7 @@
       gap: 0.5rem;
     }
 
-    .ar-hint {
-      font-size: 0.7rem;
-      color: var(--text);
-      letter-spacing: 0.1em;
-      text-align: center;
-    }
+    .ar-hint { font-size: 0.7rem; color: var(--text); letter-spacing: 0.1em; text-align: center;}
 
     .ar-hint strong { color: var(--cyan); }
 
@@ -516,48 +528,43 @@
 
     /* Optimalisatie: op kleine schermen schalen we de HUD compacter zodat knoppen en hints niet botsen. */
     @media (max-width: 480px) {
-      .ar-topbar {
-        padding: 0.85rem 1rem 0.85rem 1.25rem;
-      }
+      .ar-topbar {padding: 0.85rem 1rem 0.85rem 1.25rem;}
 
-      #active-label {
-        top: 56px;
-        max-width: calc(100vw - 5rem);
-        white-space: normal;
-        text-align: center;
-      }
+      #active-label { top: 56px; max-width: calc(100vw - 5rem); white-space: normal; text-align: center; }
 
-      #interact-hint {
-        bottom: 108px;
-        font-size: 0.58rem;
-        padding: 0.3rem 0.7rem;
-      }
+      #interact-hint {bottom: 108px; font-size: 0.58rem; padding: 0.3rem 0.7rem;}
 
-      .ar-bottombar {
-        padding: 1rem 1rem 1.1rem;
-      }
+      .ar-bottombar {padding: 1rem 1rem 1.1rem;}
 
-      .ar-hint {
-        font-size: 0.62rem;
-      }
+      .ar-hint { font-size: 0.62rem;}
 
-      .back-btn {
-        top: 4.2rem;
-        left: 0.85rem;
-        padding: 0.45rem 0.95rem;
-        font-size: 0.62rem;
-      }
+      .back-btn { top: 4.2rem; left: 0.85rem; padding: 0.45rem 0.95rem; font-size: 0.62rem;}
     }
   </style>
 </head>
+
+
 <body>
+  <!-- HTML-STRUCTUUR
+       De pagina bestaat uit 3 grote visuele toestanden:
+       1. landing page = voorpagina waar alle informatie staat, welke objecten gescand zijn en welke barcode ze hebben
+       2. laadscherm
+       3. AR-scene met overlay = werkelijke AR-wereld waar je de barcode scant en je object wordt geladen. -->
+
+
   <div id="landing">
     <div class="landing-content">
+      <!-- LANDING CONTENT
+           Dit is de informatieve startinterface met uitleg en startknop. -->
       <div class="scan-line"></div>
       <div class="label">// AUGMENTED REALITY EXPERIENCE</div>
       <h1 class="title">AR<span>_</span>VIEW</h1>
       <p class="subtitle" id="model-count">MODELLEN LADEN...</p>
+
+      <!-- model-list wordt gevuld vanuit models.json -->
       <div id="model-list"></div>
+
+      <!-- interact-row legt de touch-bediening uit aan de gebruiker -->
       <div class="interact-row">
         <div class="interact-item">
           <span class="interact-icon">☝️</span>
@@ -591,12 +598,17 @@
     </div>
   </div>
 
+  <!-- LAADSCHERM
+       Verschijnt kort terwijl de camera-interface wordt opgestart. -->
   <div id="loading-screen">
     <div class="loader-ring"></div>
     <div class="loader-text">CAMERA INITIALISEREN</div>
     <div class="loader-sub">even geduld...</div>
   </div>
 
+  <!-- AR-SCENE
+       Bevat de echte 3D/AR-omgeving.
+       De markers en modellen worden hier later via JavaScript aan toegevoegd. -->
   <div id="ar-scene">
     <a-scene
       id="ar-scene-el"
@@ -608,6 +620,8 @@
       <a-entity camera></a-entity>
     </a-scene>
 
+    <!-- AR-OVERLAY
+         Bevat alle visuele HUD-elementen boven op het camerabeeld. -->
     <div id="ar-ui">
       <div class="hud-corner hud-tl"></div>
       <div class="hud-corner hud-tr"></div>
@@ -633,11 +647,13 @@
   </div>
 
   <script>
+    // INSTELBARE PARAMETERS
+    // Dit zijn de veiligste waarden om te tunen als je gedrag of gevoel van de AR-site wil aanpassen.
     const LAADSCHERM_DUUR = 1500;
     const HINT_DUUR = 1800;
-    const OBJECT_SCHAAL = 500;
+    const OBJECT_SCHAAL = 100;
     const OBJECT_MAX_SCHAAL = 10000;
-    const OBJECT_MIN_SCHAAL = 50 ;
+    const OBJECT_MIN_SCHAAL = 10;
     const BEWEEG_BEREIK_X = 3.2;
     const BEWEEG_BEREIK_Z = 3.2;
     const ROTEER_SNELHEID = 0.75;
@@ -647,6 +663,8 @@
     const ROTATIE_DREMPEL = 0.8;
     const MARKER_LOST_DELAY = 220;
 
+    // RUNTIME STATE
+    // Houdt bij welke modellen geladen zijn en welke AR-status momenteel actief is.
     let models = [];
     let arReady = false;
     let arStarted = false;
@@ -660,21 +678,26 @@
     let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
     const markerLostTimers = {};
 
-      function createState() {
-        return {
-          current: {
-            scale: OBJECT_SCHAAL,
-            rotX: 0, rotY: 0, rotZ: 0,
-            posX: 0, posY: 0, posZ: 0
-          },
-          target: {
-            scale: OBJECT_SCHAAL,
-            rotX: 0, rotY: 0, rotZ: 0,
-            posX: 0, posY: 0, posZ: 0
-          }
-        };
-      }
+    // createState:
+    // maakt de standaardtoestand van een object aan.
+    // current = wat nu zichtbaar is, target = waar het object naartoe beweegt.
+    function createState() {
+      return {
+        current: {
+          scale: OBJECT_SCHAAL,
+          rotX: 0, rotY: 0, rotZ: 0,
+          posX: 0, posY: 0, posZ: 0
+        },
+        target: {
+          scale: OBJECT_SCHAAL,
+          rotX: 0, rotY: 0, rotZ: 0,
+          posX: 0, posY: 0, posZ: 0
+        }
+      };
+    }
 
+    // getState:
+    // geeft de toestand van een bepaald markerobject terug en maakt die indien nodig aan.
     function getState(markerId) {
       if (!objectStates[markerId]) {
         objectStates[markerId] = createState();
@@ -682,14 +705,22 @@
       return objectStates[markerId];
     }
 
+    // clamp:
+    // houdt een waarde tussen een minimum en maximum.
+    // Gebruikt om schaal en rotaties binnen veilige grenzen te houden.
     function clamp(value, min, max) {
       return Math.min(max, Math.max(min, value));
     }
 
+    // lerp:
+    // lineaire interpolatie tussen current en target.
+    // Maakt bewegingen vloeiender in plaats van abrupt.
     function lerp(current, target, factor) {
       return current + (target - current) * factor;
     }
 
+    // normalizeAngleDelta:
+    // voorkomt grote rotatiesprongen rond -180 / 180 graden.
     function normalizeAngleDelta(delta) {
       let normalized = delta;
       while (normalized > 180) normalized -= 360;
@@ -697,6 +728,9 @@
       return normalized;
     }
 
+    // syncObjectTransform:
+    // zet positie, rotatie en schaal effectief op het A-Frame/Three.js object.
+    // Dit is kernlogica en dus niet iets om zomaar te herschrijven.
     function syncObjectTransform(entity, state) {
       if (!entity || !entity.object3D) return;
       entity.object3D.position.set(state.current.posX, state.current.posY, state.current.posZ);
@@ -708,6 +742,8 @@
       entity.object3D.scale.set(state.current.scale, state.current.scale, state.current.scale);
     }
 
+    // animateObjects:
+    // laat current vloeiend naar target bewegen zodat interacties niet schokkerig aanvoelen.
     function animateObjects() {
       Object.values(objectStates).forEach(({ entity, current, target }) => {
         if (!entity) return;
@@ -726,24 +762,34 @@
       requestAnimationFrame(animateObjects);
     }
 
+    // startRenderLoop:
+    // zorgt dat de animatielus slechts één keer opstart.
     function startRenderLoop() {
       if (renderLoopStarted) return;
       renderLoopStarted = true;
       requestAnimationFrame(animateObjects);
     }
 
+    // getTouchDistance:
+    // afstand tussen twee vingers, gebruikt voor pinch-schaal.
     function getTouchDistance(t1, t2) {
       return Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
     }
 
+    // getTouchAngle:
+    // hoek tussen twee vingers, gebruikt voor rotatie.
     function getTouchAngle(t1, t2) {
       return Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
     }
 
+    // getTouchMidpoint:
+    // midden tussen twee vingers, gebruikt om extra tilt af te leiden.
     function getTouchMidpoint(t1, t2) {
       return { x: (t1.clientX + t2.clientX) / 2, y: (t1.clientY + t2.clientY) / 2 };
     }
 
+    // showHint:
+    // toont tijdelijk instructietekst in de AR-overlay.
     function showHint(text) {
       const hint = document.getElementById('interact-hint');
       hint.textContent = text;
@@ -752,12 +798,14 @@
       hint._timer = setTimeout(() => hint.classList.remove('visible'), HINT_DUUR);
     }
 
-    // Optimalisatie: centrale statusfunctie zodat fouten en succesmeldingen consistenter blijven.
+    // setStatus:
+    // centrale functie om meldingen op de landing page te tonen.
     function setStatus(text) {
       document.getElementById('status-text').textContent = text;
     }
 
-    // Optimalisatie: reset interactiestatus wanneer AR stopt of marker verloren gaat.
+    // resetInteractionState:
+    // wist tijdelijke interactiestatus wanneer AR stopt of wanneer de marker verloren gaat.
     function resetInteractionState() {
       touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
       setModeIndicator(null);
@@ -766,8 +814,9 @@
       document.getElementById('interact-hint').classList.remove('visible');
     }
 
-    // Optimalisatie: directe mapping van schermpositie naar het marker-vlak.
-    // Daardoor kun je veel sneller naar de hoeken van het bruikbare AR-gebied slepen.
+    // mapTouchToMarkerPlane:
+    // vertaalt de vingerpositie op het scherm naar een positie op het marker-vlak.
+    // Daardoor voelt verplaatsen directer en sneller aan dan kleine incrementele stapjes.
     function mapTouchToMarkerPlane(x, y) {
       const normalizedX = clamp((x / window.innerWidth) * 2 - 1, -1, 1);
       const normalizedY = clamp((y / window.innerHeight) * 2 - 1, -1, 1);
@@ -777,12 +826,19 @@
       };
     }
 
+    // setModeIndicator:
+    // laat visueel zien of de gebruiker aan het verplaatsen, schalen of roteren is.
     function setModeIndicator(mode) {
       document.getElementById('mode-move').classList.toggle('active', mode === 'move');
       document.getElementById('mode-scale').classList.toggle('active', mode === 'scale');
       document.getElementById('mode-rotate').classList.toggle('active', mode === 'rotate');
     }
 
+    // setupTouchHandlers:
+    // hoofdlogica voor aanrakingen:
+    // - 1 vinger = verplaatsen
+    // - 2 vingers = schalen/roteren
+    // De event-structuur best niet grondig wijzigen zonder de touchlogica te begrijpen.
     function setupTouchHandlers() {
       if (touchHandlersReady) return;
       touchHandlersReady = true;
@@ -871,6 +927,8 @@
       }, { passive: false });
     }
 
+    // loadModels:
+    // haalt models.json op. Dat bestand bepaalt welke GLB-modellen de website kent.
     async function loadModels() {
       try {
         const res = await fetch('models.json?nocache=' + Date.now());
@@ -888,6 +946,9 @@
       }
     }
 
+    // setupLanding:
+    // vult de landing page dynamisch met objectnamen en barcode-indexen.
+    // Belangrijk: index i van een model wordt ook barcode i.
     function setupLanding() {
       const list = document.getElementById('model-list');
       const count = document.getElementById('model-count');
@@ -912,6 +973,12 @@
       status.textContent = 'SYSTEEM GEREED — CAMERA VEREIST';
     }
 
+    // setupARScene:
+    // maakt voor elk model:
+    // - een asset
+    // - een barcode-marker
+    // - een 3D entity
+    // Dit is de kernfunctie van de marker-gebaseerde AR-werking.
     function setupARScene() {
       const assets = document.getElementById('ar-assets');
       const scene = document.getElementById('ar-scene-el');
@@ -979,6 +1046,8 @@
       startRenderLoop();
     }
 
+    // stopCamera:
+    // stopt de echte camerastream wanneer de pagina verborgen wordt of sluit.
     function stopCamera() {
       const videos = document.querySelectorAll('video');
       videos.forEach((video) => {
@@ -989,6 +1058,8 @@
       });
     }
 
+    // startAR:
+    // schakelt van landing page naar AR-weergave en hervat daarna de scene.
     function startAR() {
       if (!arReady || arStarted) return;
       arStarted = true;
@@ -1009,8 +1080,9 @@
       }, LAADSCHERM_DUUR);
     }
 
-    // Optimalisatie: de terugknop krijgt eigen click/touch handlers zodat actieve AR-touch
-    // interacties of marker-events de navigatie naar de landingspagina niet blokkeren.
+    // setupBackButton:
+    // maakt de terugknop robuust.
+    // De knop krijgt eigen click/touch handlers zodat AR-touch-interacties hem niet blokkeren.
     function setupBackButton() {
       const backBtn = document.querySelector('.back-btn');
       if (!backBtn || backBtn._bound) return;
@@ -1026,6 +1098,8 @@
       backBtn.addEventListener('touchstart', handleBack, { passive: false });
     }
 
+    // stopAR:
+    // sluit de AR-view, toont de landing page opnieuw en reset de actieve interactiestatus.
     function stopAR() {
       const scene = document.getElementById('ar-scene-el');
       document.getElementById('ar-scene').classList.remove('active');
@@ -1050,6 +1124,8 @@
     window.addEventListener('beforeunload', stopCamera);
     window.addEventListener('pagehide', stopCamera);
 
+    // INIT
+    // Eerst de terugknop robuust binden, daarna de modellen laden.
     setupBackButton();
     loadModels();
   </script>
