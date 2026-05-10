@@ -2,9 +2,9 @@
 // Dit zijn de belangrijkste waarden om gedrag en gevoel van de AR-site te tunen.
 const LAADSCHERM_DUUR = 1500;
 const HINT_DUUR = 1800;
-const OBJECT_SCHAAL = 10;
-const OBJECT_MAX_SCHAAL = 100;
-const OBJECT_MIN_SCHAAL = 1;
+const OBJECT_SCHAAL = 100;
+const OBJECT_MAX_SCHAAL = 500;
+const OBJECT_MIN_SCHAAL = 10;
 const BEWEEG_BEREIK_X = 3.2;
 const BEWEEG_BEREIK_Z = 3.2;
 const ROTEER_SNELHEID = 0.75;
