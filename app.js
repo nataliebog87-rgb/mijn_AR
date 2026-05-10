@@ -91,6 +91,14 @@ function normalizeAngleDelta(delta) {
   return normalized;
 }
 
+// wrapDegrees:
+// houdt hoeken leesbaar door ze binnen 0..360 graden te houden zonder de vrije rotatie te beperken.
+function wrapDegrees(value) {
+  let wrapped = value % 360;
+  if (wrapped < 0) wrapped += 360;
+  return wrapped;
+}
+
 // syncObjectTransform:
 // Zet positie, rotatie en schaal effectief op het Three.js object van A-Frame.
 // Dit is kernlogica van de 3D-transformatie.
@@ -412,8 +420,8 @@ function setupTouchHandlers() {
           showHint("PINCH OM TE SCHALEN");
         }
       } else if (isRotateGesture || Math.abs(angleDelta) > ROTATIE_DREMPEL) {
-        state.target.rotY += midDeltaX * ROTATE_DRAG_SNELHEID;
-        state.target.rotX = clamp(state.target.rotX + (midDeltaY * ROTATIE_TILT_SNELHEID), -85, 85);
+        state.target.rotY = wrapDegrees(state.target.rotY + (midDeltaX * ROTATE_DRAG_SNELHEID));
+        state.target.rotX = wrapDegrees(state.target.rotX + (midDeltaY * ROTATIE_TILT_SNELHEID));
         if (touch.mode !== "rotate") {
           touch.mode = "rotate";
           setModeIndicator("rotate");
