@@ -560,10 +560,8 @@
       <div class="label">// AUGMENTED REALITY EXPERIENCE</div>
       <h1 class="title">AR<span>_</span>VIEW</h1>
       <p class="subtitle" id="model-count">MODELLEN LADEN...</p>
-
       <!-- model-list wordt gevuld vanuit models.json -->
       <div id="model-list"></div>
-
       <!-- interact-row legt de touch-bediening uit aan de gebruiker -->
       <div class="interact-row">
         <div class="interact-item">
@@ -651,9 +649,9 @@
     // Dit zijn de veiligste waarden om te tunen als je gedrag of gevoel van de AR-site wil aanpassen.
     const LAADSCHERM_DUUR = 1500;
     const HINT_DUUR = 1800;
-    const OBJECT_SCHAAL = 100;
-    const OBJECT_MAX_SCHAAL = 10000;
-    const OBJECT_MIN_SCHAAL = 10;
+    const OBJECT_SCHAAL = 0.5;
+    const OBJECT_MAX_SCHAAL = 5;
+    const OBJECT_MIN_SCHAAL = 0.05;
     const BEWEEG_BEREIK_X = 3.2;
     const BEWEEG_BEREIK_Z = 3.2;
     const ROTEER_SNELHEID = 0.75;
@@ -826,6 +824,39 @@
       };
     }
 
+    // isTouchOnActiveObject:
+    // controleert via raycasting of de gebruiker echt op het actieve 3D-object tikt.
+    function isTouchOnActiveObject(touchPoint) {
+      const sceneEl = document.getElementById('ar-scene-el');
+      if (!sceneEl || !sceneEl.camera || !activeEntity || !activeEntity.object3D) return false;
+
+      const meshes = [];
+      activeEntity.object3D.traverse((node) => {
+        if (node.isMesh) meshes.push(node);
+      });
+      if (!meshes.length) return false;
+
+      const pointer = new THREE.Vector2(
+        (touchPoint.clientX / window.innerWidth) * 2 - 1,
+        -(touchPoint.clientY / window.innerHeight) * 2 + 1
+      );
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(pointer, sceneEl.camera);
+      return raycaster.intersectObjects(meshes, true).length > 0;
+    }
+
+    // centerObjectState:
+    // zet de positie van een object terug op het lokale midden van de marker.
+    function centerObjectState(state) {
+      state.current.posX = 0;
+      state.current.posY = 0;
+      state.current.posZ = 0;
+      state.target.posX = 0;
+      state.target.posY = 0;
+      state.target.posZ = 0;
+    }
+
     // setModeIndicator:
     // laat visueel zien of de gebruiker aan het verplaatsen, schalen of roteren is.
     function setModeIndicator(mode) {
@@ -850,6 +881,11 @@
         e.preventDefault();
 
         if (e.touches.length === 1) {
+          if (!isTouchOnActiveObject(e.touches[0])) {
+            touch.mode = null;
+            setModeIndicator(null);
+            return;
+          }
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
           touch.mode = 'move';
           setModeIndicator('move');
@@ -1024,6 +1060,8 @@
           clearTimeout(markerLostTimers['marker-' + i]);
           activeMarkerId = 'marker-' + i;
           activeEntity = entity;
+          centerObjectState(state);
+          syncObjectTransform(entity, state);
           const label = document.getElementById('active-label');
           label.textContent = '▸ ' + cleanName.toUpperCase() + ' GEVONDEN';
           label.classList.add('visible');
