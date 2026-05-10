@@ -691,6 +691,7 @@
     const objectStates = {};
 
     let activeMarkerId = null;
+    let activeMarkerEl = null;
     let activeEntity = null;
     let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
     const markerLostTimers = {};
@@ -831,19 +832,40 @@
       document.getElementById('interact-hint').classList.remove('visible');
     }
 
-    // mapTouchToMarkerPlane:
-    // vertaalt de vingerpositie op het scherm naar een positie op het marker-vlak.
-    // Daardoor voelt verplaatsen directer en sneller aan dan kleine incrementele stapjes.
-    function mapTouchToMarkerPlane(x, y) {
-      const normalizedX = clamp((x / window.innerWidth) * 2 - 1, -1, 1);
-      const normalizedY = clamp((y / window.innerHeight) * 2 - 1, -1, 1);
+    // getPointOnMarkerPlane:
+    // projecteert een schermpunt naar het vlak van de actieve marker.
+    // Dit geeft een veel accuratere verplaatsing dan een ruwe 2D schermmapping.
+    function getPointOnMarkerPlane(markerEl, clientX, clientY) {
+      const sceneEl = document.getElementById('ar-scene-el');
+      if (!sceneEl || !sceneEl.camera || !markerEl || !markerEl.object3D) return null;
+
+      const markerObject = markerEl.object3D;
+      const localNormal = new THREE.Vector3(0, 1, 0);
+      const worldNormal = localNormal.clone().transformDirection(markerObject.matrixWorld).normalize();
+      const worldOrigin = markerObject.getWorldPosition(new THREE.Vector3());
+
+      const pointer = new THREE.Vector2(
+        (clientX / window.innerWidth) * 2 - 1,
+        -(clientY / window.innerHeight) * 2 + 1
+      );
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(pointer, sceneEl.camera);
+
+      const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(worldNormal, worldOrigin);
+      const worldPoint = new THREE.Vector3();
+      const hit = raycaster.ray.intersectPlane(plane, worldPoint);
+      if (!hit) return null;
+
+      const localPoint = markerObject.worldToLocal(worldPoint.clone());
       return {
-        posX: normalizedX * BEWEEG_BEREIK_X,
-        posZ: normalizedY * BEWEEG_BEREIK_Z
+        posX: clamp(localPoint.x, -BEWEEG_BEREIK_X, BEWEEG_BEREIK_X),
+        posY: 0,
+        posZ: clamp(localPoint.z, -BEWEEG_BEREIK_Z, BEWEEG_BEREIK_Z)
       };
     }
 
-    // isTouchOnActiveObject:
+     // isTouchOnActiveObject:
     // controleert via raycasting of de gebruiker echt op het actieve 3D-object tikt.
     function isTouchOnActiveObject(touchPoint) {
       const sceneEl = document.getElementById('ar-scene-el');
@@ -866,16 +888,22 @@
     }
 
     // centerObjectState:
-    // zet de positie van een object terug op het lokale midden van de marker.
-    function centerObjectState(state) {
-      state.current.posX = 0;
-      state.current.posY = 0;
-      state.current.posZ = 0;
-      state.target.posX = 0;
-      state.target.posY = 0;
-      state.target.posZ = 0;
-    }
+    // zet het object op het punt van het markervlak dat overeenkomt met het midden van het scherm.
+    // Daardoor blijft "midden van het scherm" toestel-onafhankelijk berekend.
+    function centerObjectState(state, markerEl) {
+      const centerPoint = getPointOnMarkerPlane(markerEl, window.innerWidth / 2, window.innerHeight / 2);
+      const posX = centerPoint ? centerPoint.posX : 0;
+      const posY = centerPoint ? centerPoint.posY : 0;
+      const posZ = centerPoint ? centerPoint.posZ : 0;
 
+      state.current.posX = posX;
+      state.current.posY = posY;
+      state.current.posZ = posZ;
+      state.target.posX = posX;
+      state.target.posY = posY;
+      state.target.posZ = posZ;
+    }
+    
     // setModeIndicator:
     // laat visueel zien of de gebruiker aan het verplaatsen, schalen of roteren is.
     function setModeIndicator(mode) {
@@ -925,9 +953,12 @@
         const state = getState(activeMarkerId);
 
         if (e.touches.length === 1 && touch.mode === 'move' && touch.prev) {
-          const planePosition = mapTouchToMarkerPlane(e.touches[0].clientX, e.touches[0].clientY);
-          state.target.posX = planePosition.posX;
-          state.target.posZ = planePosition.posZ;
+          const planePosition = getPointOnMarkerPlane(activeMarkerEl, e.touches[0].clientX, e.touches[0].clientY);
+          if (planePosition) {
+            state.target.posX = planePosition.posX;
+            state.target.posY = planePosition.posY;
+            state.target.posZ = planePosition.posZ;
+          }
 
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         } else if (e.touches.length === 2 && touch.prevMid) {
@@ -1078,8 +1109,9 @@
         marker.addEventListener('markerFound', () => {
           clearTimeout(markerLostTimers['marker-' + i]);
           activeMarkerId = 'marker-' + i;
+          activeMarkerEl = marker;
           activeEntity = entity;
-          centerObjectState(state);
+          centerObjectState(state, marker);
           syncObjectTransform(entity, state);
           const label = document.getElementById('active-label');
           label.textContent = '▸ ' + cleanName.toUpperCase() + ' GEVONDEN';
@@ -1092,6 +1124,7 @@
           markerLostTimers['marker-' + i] = setTimeout(() => {
             if (activeMarkerId === 'marker-' + i) {
               activeMarkerId = null;
+              activeMarkerEl = null;
               activeEntity = null;
               resetInteractionState();
             }
@@ -1162,6 +1195,7 @@
       document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
       activeMarkerId = null;
+      activeMarkerEl = null;
       activeEntity = null;
       arStarted = false;
       Object.keys(markerLostTimers).forEach((key) => clearTimeout(markerLostTimers[key]));
