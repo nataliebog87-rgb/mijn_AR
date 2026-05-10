@@ -15,8 +15,6 @@
   <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
-
-
     /* KLEURENPALET
        Veilig aanpasbaar: hiermee verander je de algemene look van de interface. */
     :root {
@@ -484,7 +482,12 @@
       gap: 0.5rem;
     }
 
-    .ar-hint { font-size: 0.7rem; color: var(--text); letter-spacing: 0.1em; text-align: center;}
+    .ar-hint {
+      font-size: 0.7rem;
+      color: var(--text);
+      letter-spacing: 0.1em;
+      text-align: center;
+    }
 
     .ar-hint strong { color: var(--cyan); }
 
@@ -528,30 +531,46 @@
 
     /* Optimalisatie: op kleine schermen schalen we de HUD compacter zodat knoppen en hints niet botsen. */
     @media (max-width: 480px) {
-      .ar-topbar {padding: 0.85rem 1rem 0.85rem 1.25rem;}
+      .ar-topbar {
+        padding: 0.85rem 1rem 0.85rem 1.25rem;
+      }
 
-      #active-label { top: 56px; max-width: calc(100vw - 5rem); white-space: normal; text-align: center; }
+      #active-label {
+        top: 56px;
+        max-width: calc(100vw - 5rem);
+        white-space: normal;
+        text-align: center;
+      }
 
-      #interact-hint {bottom: 108px; font-size: 0.58rem; padding: 0.3rem 0.7rem;}
+      #interact-hint {
+        bottom: 108px;
+        font-size: 0.58rem;
+        padding: 0.3rem 0.7rem;
+      }
 
-      .ar-bottombar {padding: 1rem 1rem 1.1rem;}
+      .ar-bottombar {
+        padding: 1rem 1rem 1.1rem;
+      }
 
-      .ar-hint { font-size: 0.62rem;}
+      .ar-hint {
+        font-size: 0.62rem;
+      }
 
-      .back-btn { top: 4.2rem; left: 0.85rem; padding: 0.45rem 0.95rem; font-size: 0.62rem;}
+      .back-btn {
+        top: 4.2rem;
+        left: 0.85rem;
+        padding: 0.45rem 0.95rem;
+        font-size: 0.62rem;
+      }
     }
   </style>
 </head>
-
-
 <body>
   <!-- HTML-STRUCTUUR
        De pagina bestaat uit 3 grote visuele toestanden:
-       1. landing page = voorpagina waar alle informatie staat, welke objecten gescand zijn en welke barcode ze hebben
+       1. landing page
        2. laadscherm
-       3. AR-scene met overlay = werkelijke AR-wereld waar je de barcode scant en je object wordt geladen. -->
-
-
+       3. AR-scene met overlay -->
   <div id="landing">
     <div class="landing-content">
       <!-- LANDING CONTENT
