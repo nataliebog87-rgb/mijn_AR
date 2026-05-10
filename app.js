@@ -2,9 +2,9 @@
 // Dit zijn de belangrijkste waarden om gedrag en gevoel van de AR-site te tunen.
 const LAADSCHERM_DUUR = 1500;
 const HINT_DUUR = 1800;
-const OBJECT_SCHAAL = 150;
-const OBJECT_MAX_SCHAAL = 1000;
-const OBJECT_MIN_SCHAAL = 50;
+const OBJECT_SCHAAL = 500;
+const OBJECT_MAX_SCHAAL = 50000;
+const OBJECT_MIN_SCHAAL = 100;
 const BEWEEG_BEREIK_X = 3.2;
 const BEWEEG_BEREIK_Z = 3.2;
 const ROTEER_SNELHEID = 0.75;
@@ -436,13 +436,15 @@ function setupTouchHandlers() {
       touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null, prevTouches: null };
       setModeIndicator(null);
     } else if (e.touches.length === 1) {
-      touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      // Na een 2-vinger interactie schakelen we niet automatisch naar slepen.
+      // Zo voorkom je dat een pinch onbedoeld eindigt in een verplaatsing.
+      touch.prev = null;
       touch.prevDist = 0;
       touch.prevAngle = 0;
       touch.prevMid = null;
       touch.prevTouches = null;
-      touch.mode = "move";
-      setModeIndicator("move");
+      touch.mode = null;
+      setModeIndicator(null);
     }
   }, { passive: false });
 }
