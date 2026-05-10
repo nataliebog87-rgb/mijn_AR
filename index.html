@@ -675,9 +675,14 @@
     const BEWEEG_BEREIK_Z = 3.2;
     const ROTEER_SNELHEID = 0.75;
     const ROTATIE_TILT_SNELHEID = 0.14;
+    const ROTATE_DRAG_SNELHEID = 0.45;
     const SMOOTHING = 0.18;
-    const SCHAAL_DREMPEL = 100;
+    const SCHAAL_DREMPEL = 8;
     const ROTATIE_DREMPEL = 0.8;
+    const PINCH_MIN_AFSTAND = 80;
+    const ROTATE_MAX_AFSTAND = 90;
+    const ROTATE_MOVE_DREMPEL = 6;
+    const SAME_DIRECTION_DREMPEL = 0.75;
     const MARKER_LOST_DELAY = 220;
 
     // RUNTIME STATE
@@ -691,8 +696,9 @@
     const objectStates = {};
 
     let activeMarkerId = null;
+    let activeMarkerEl = null;
     let activeEntity = null;
-    let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
+    let touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null, prevTouches: null };
     const markerLostTimers = {};
 
     // createState:
@@ -824,26 +830,47 @@
     // resetInteractionState:
     // wist tijdelijke interactiestatus wanneer AR stopt of wanneer de marker verloren gaat.
     function resetInteractionState() {
-      touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
+      touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null, prevTouches: null };
       setModeIndicator(null);
       document.getElementById('active-label').classList.remove('visible');
       clearTimeout(document.getElementById('interact-hint')._timer);
       document.getElementById('interact-hint').classList.remove('visible');
     }
 
-    // mapTouchToMarkerPlane:
-    // vertaalt de vingerpositie op het scherm naar een positie op het marker-vlak.
-    // Daardoor voelt verplaatsen directer en sneller aan dan kleine incrementele stapjes.
-    function mapTouchToMarkerPlane(x, y) {
-      const normalizedX = clamp((x / window.innerWidth) * 2 - 1, -1, 1);
-      const normalizedY = clamp((y / window.innerHeight) * 2 - 1, -1, 1);
+    // getPointOnMarkerPlane:
+    // projecteert een schermpunt naar het vlak van de actieve marker.
+    // Dit geeft een veel accuratere verplaatsing dan een ruwe 2D schermmapping.
+    function getPointOnMarkerPlane(markerEl, clientX, clientY) {
+      const sceneEl = document.getElementById('ar-scene-el');
+      if (!sceneEl || !sceneEl.camera || !markerEl || !markerEl.object3D) return null;
+
+      const markerObject = markerEl.object3D;
+      const localNormal = new THREE.Vector3(0, 1, 0);
+      const worldNormal = localNormal.clone().transformDirection(markerObject.matrixWorld).normalize();
+      const worldOrigin = markerObject.getWorldPosition(new THREE.Vector3());
+
+      const pointer = new THREE.Vector2(
+        (clientX / window.innerWidth) * 2 - 1,
+        -(clientY / window.innerHeight) * 2 + 1
+      );
+
+      const raycaster = new THREE.Raycaster();
+      raycaster.setFromCamera(pointer, sceneEl.camera);
+
+      const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(worldNormal, worldOrigin);
+      const worldPoint = new THREE.Vector3();
+      const hit = raycaster.ray.intersectPlane(plane, worldPoint);
+      if (!hit) return null;
+
+      const localPoint = markerObject.worldToLocal(worldPoint.clone());
       return {
-        posX: normalizedX * BEWEEG_BEREIK_X,
-        posZ: normalizedY * BEWEEG_BEREIK_Z
+        posX: clamp(localPoint.x, -BEWEEG_BEREIK_X, BEWEEG_BEREIK_X),
+        posY: 0,
+        posZ: clamp(localPoint.z, -BEWEEG_BEREIK_Z, BEWEEG_BEREIK_Z)
       };
     }
 
-    // isTouchOnActiveObject:
+     // isTouchOnActiveObject:
     // controleert via raycasting of de gebruiker echt op het actieve 3D-object tikt.
     function isTouchOnActiveObject(touchPoint) {
       const sceneEl = document.getElementById('ar-scene-el');
@@ -866,16 +893,49 @@
     }
 
     // centerObjectState:
-    // zet de positie van een object terug op het lokale midden van de marker.
-    function centerObjectState(state) {
-      state.current.posX = 0;
-      state.current.posY = 0;
-      state.current.posZ = 0;
-      state.target.posX = 0;
-      state.target.posY = 0;
-      state.target.posZ = 0;
+    // zet het object op het punt van het markervlak dat overeenkomt met het midden van het scherm.
+    // Daardoor blijft "midden van het scherm" toestel-onafhankelijk berekend.
+    function centerObjectState(state, markerEl) {
+      const centerPoint = getPointOnMarkerPlane(markerEl, window.innerWidth / 2, window.innerHeight / 2);
+      const posX = centerPoint ? centerPoint.posX : 0;
+      const posY = centerPoint ? centerPoint.posY : 0;
+      const posZ = centerPoint ? centerPoint.posZ : 0;
+
+      state.current.posX = posX;
+      state.current.posY = posY;
+      state.current.posZ = posZ;
+      state.target.posX = posX;
+      state.target.posY = posY;
+      state.target.posZ = posZ;
     }
 
+    // centerModelPivot:
+    // verplaatst het interne GLB-model zodat zijn visuele middelpunt samenvalt met de entity-origin.
+    // Dit helpt om het object echt centraal te laten verschijnen, ook als de mesh een rare pivot heeft.
+    function centerModelPivot(entity) {
+      const mesh = entity.getObject3D('mesh');
+      if (!mesh || mesh.userData.pivotCentered) return;
+
+      const box = new THREE.Box3().setFromObject(mesh);
+      if (box.isEmpty()) return;
+
+      const center = box.getCenter(new THREE.Vector3());
+      mesh.worldToLocal(center);
+      mesh.position.sub(center);
+      mesh.updateMatrixWorld(true);
+      mesh.userData.pivotCentered = true;
+    }
+
+    // getDirectionSimilarity:
+    // vergelijkt of twee vingers ongeveer in dezelfde richting bewegen.
+    // Nuttig om pinch te onderscheiden van een 2-vinger draaibeweging.
+    function getDirectionSimilarity(deltaA, deltaB) {
+      const lenA = Math.hypot(deltaA.x, deltaA.y);
+      const lenB = Math.hypot(deltaB.x, deltaB.y);
+      if (!lenA || !lenB) return 0;
+      return ((deltaA.x * deltaB.x) + (deltaA.y * deltaB.y)) / (lenA * lenB);
+    }
+    
     // setModeIndicator:
     // laat visueel zien of de gebruiker aan het verplaatsen, schalen of roteren is.
     function setModeIndicator(mode) {
@@ -913,6 +973,10 @@
           touch.prevDist = getTouchDistance(e.touches[0], e.touches[1]);
           touch.prevAngle = getTouchAngle(e.touches[0], e.touches[1]);
           touch.prevMid = getTouchMidpoint(e.touches[0], e.touches[1]);
+          touch.prevTouches = [
+            { x: e.touches[0].clientX, y: e.touches[0].clientY },
+            { x: e.touches[1].clientX, y: e.touches[1].clientY }
+          ];
           touch.mode = 'rotate';
           setModeIndicator('rotate');
           showHint('TWEE VINGERS OM TE DRAAIEN OF SCHALEN');
@@ -925,9 +989,12 @@
         const state = getState(activeMarkerId);
 
         if (e.touches.length === 1 && touch.mode === 'move' && touch.prev) {
-          const planePosition = mapTouchToMarkerPlane(e.touches[0].clientX, e.touches[0].clientY);
-          state.target.posX = planePosition.posX;
-          state.target.posZ = planePosition.posZ;
+          const planePosition = getPointOnMarkerPlane(activeMarkerEl, e.touches[0].clientX, e.touches[0].clientY);
+          if (planePosition) {
+            state.target.posX = planePosition.posX;
+            state.target.posY = planePosition.posY;
+            state.target.posZ = planePosition.posZ;
+          }
 
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
         } else if (e.touches.length === 2 && touch.prevMid) {
@@ -939,21 +1006,35 @@
           const angleDelta = normalizeAngleDelta(curAngle - touch.prevAngle);
           const midDeltaY = curMid.y - touch.prevMid.y;
           const midDeltaX = curMid.x - touch.prevMid.x;
+          const deltaA = {
+            x: e.touches[0].clientX - touch.prevTouches[0].x,
+            y: e.touches[0].clientY - touch.prevTouches[0].y
+          };
+          const deltaB = {
+            x: e.touches[1].clientX - touch.prevTouches[1].x,
+            y: e.touches[1].clientY - touch.prevTouches[1].y
+          };
+          const directionSimilarity = getDirectionSimilarity(deltaA, deltaB);
+          const averageMove = (
+            Math.hypot(deltaA.x, deltaA.y) + Math.hypot(deltaB.x, deltaB.y)
+          ) / 2;
+          const isPinchGesture = curDist >= PINCH_MIN_AFSTAND && Math.abs(distDelta) > SCHAAL_DREMPEL;
+          const isRotateGesture =
+            curDist <= ROTATE_MAX_AFSTAND &&
+            directionSimilarity >= SAME_DIRECTION_DREMPEL &&
+            averageMove >= ROTATE_MOVE_DREMPEL;
 
-          const scaleFactor = touch.prevDist > 0 ? curDist / touch.prevDist : 1;
-          state.target.scale = clamp(state.target.scale * scaleFactor, OBJECT_MIN_SCHAAL, OBJECT_MAX_SCHAAL);
-
-          state.target.rotY += angleDelta * ROTEER_SNELHEID;
-          state.target.rotX = clamp(state.target.rotX + (midDeltaY * ROTATIE_TILT_SNELHEID), -85, 85);
-          state.target.rotZ = clamp(state.target.rotZ + (midDeltaX * ROTATIE_TILT_SNELHEID), -60, 60);
-
-          if (Math.abs(distDelta) > SCHAAL_DREMPEL) {
+          if (isPinchGesture) {
+            const scaleFactor = touch.prevDist > 0 ? curDist / touch.prevDist : 1;
+            state.target.scale = clamp(state.target.scale * scaleFactor, OBJECT_MIN_SCHAAL, OBJECT_MAX_SCHAAL);
             if (touch.mode !== 'scale') {
               touch.mode = 'scale';
               setModeIndicator('scale');
               showHint('PINCH OM TE SCHALEN');
             }
-          } else if (Math.abs(angleDelta) > ROTATIE_DREMPEL) {
+          } else if (isRotateGesture || Math.abs(angleDelta) > ROTATIE_DREMPEL) {
+            state.target.rotY += midDeltaX * ROTATE_DRAG_SNELHEID;
+            state.target.rotX = clamp(state.target.rotX + (midDeltaY * ROTATIE_TILT_SNELHEID), -85, 85);
             if (touch.mode !== 'rotate') {
               touch.mode = 'rotate';
               setModeIndicator('rotate');
@@ -964,18 +1045,23 @@
           touch.prevDist = curDist;
           touch.prevAngle = curAngle;
           touch.prevMid = curMid;
+          touch.prevTouches = [
+            { x: e.touches[0].clientX, y: e.touches[0].clientY },
+            { x: e.touches[1].clientX, y: e.touches[1].clientY }
+          ];
         }
       }, { passive: false });
 
       arContainer.addEventListener('touchend', (e) => {
         if (e.touches.length === 0) {
-          touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null };
+          touch = { prev: null, mode: null, prevDist: 0, prevAngle: 0, prevMid: null, prevTouches: null };
           setModeIndicator(null);
         } else if (e.touches.length === 1) {
           touch.prev = { x: e.touches[0].clientX, y: e.touches[0].clientY };
           touch.prevDist = 0;
           touch.prevAngle = 0;
           touch.prevMid = null;
+          touch.prevTouches = null;
           touch.mode = 'move';
           setModeIndicator('move');
         }
@@ -1060,6 +1146,17 @@
         const entity = document.createElement('a-entity');
         entity.setAttribute('gltf-model', '#model-' + i);
         entity.setAttribute('id', 'entity-' + i);
+        entity.addEventListener('model-loaded', () => {
+          centerModelPivot(entity);
+          if (activeMarkerEl === marker) {
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                centerObjectState(state, marker);
+                syncObjectTransform(entity, state);
+              });
+            });
+          }
+        });
 
         const state = getState('marker-' + i);
         state.entity = entity;
@@ -1078,9 +1175,14 @@
         marker.addEventListener('markerFound', () => {
           clearTimeout(markerLostTimers['marker-' + i]);
           activeMarkerId = 'marker-' + i;
+          activeMarkerEl = marker;
           activeEntity = entity;
-          centerObjectState(state);
-          syncObjectTransform(entity, state);
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              centerObjectState(state, marker);
+              syncObjectTransform(entity, state);
+            });
+          });
           const label = document.getElementById('active-label');
           label.textContent = '▸ ' + cleanName.toUpperCase() + ' GEVONDEN';
           label.classList.add('visible');
@@ -1092,6 +1194,7 @@
           markerLostTimers['marker-' + i] = setTimeout(() => {
             if (activeMarkerId === 'marker-' + i) {
               activeMarkerId = null;
+              activeMarkerEl = null;
               activeEntity = null;
               resetInteractionState();
             }
@@ -1162,6 +1265,7 @@
       document.getElementById('ar-scene').classList.remove('active');
       document.getElementById('landing').style.display = 'flex';
       activeMarkerId = null;
+      activeMarkerEl = null;
       activeEntity = null;
       arStarted = false;
       Object.keys(markerLostTimers).forEach((key) => clearTimeout(markerLostTimers[key]));
