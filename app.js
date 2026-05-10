@@ -358,18 +358,18 @@ function setupTouchHandlers() {
       touch.mode = "move";
       setModeIndicator("move");
       showHint("SLEPEN OM TE VERPLAATSEN");
-      } else if (e.touches.length === 2) {
-        touch.prevDist = getTouchDistance(e.touches[0], e.touches[1]);
-        touch.prevAngle = getTouchAngle(e.touches[0], e.touches[1]);
-        touch.prevMid = getTouchMidpoint(e.touches[0], e.touches[1]);
-        touch.prevTouches = [
-          { x: e.touches[0].clientX, y: e.touches[0].clientY },
-          { x: e.touches[1].clientX, y: e.touches[1].clientY }
-        ];
-        touch.mode = "gesture";
-        setModeIndicator(null);
-        showHint("TWEE VINGERS OM TE DRAAIEN OF SCHALEN");
-      }
+    } else if (e.touches.length === 2) {
+      touch.prevDist = getTouchDistance(e.touches[0], e.touches[1]);
+      touch.prevAngle = getTouchAngle(e.touches[0], e.touches[1]);
+      touch.prevMid = getTouchMidpoint(e.touches[0], e.touches[1]);
+      touch.prevTouches = [
+        { x: e.touches[0].clientX, y: e.touches[0].clientY },
+        { x: e.touches[1].clientX, y: e.touches[1].clientY }
+      ];
+      touch.mode = "rotate";
+      setModeIndicator("rotate");
+      showHint("TWEE VINGERS OM TE DRAAIEN OF SCHALEN");
+    }
   }, { passive: false });
 
   arContainer.addEventListener("touchmove", (e) => {
@@ -411,20 +411,20 @@ function setupTouchHandlers() {
         directionSimilarity >= SAME_DIRECTION_DREMPEL &&
         averageMove >= ROTATE_MOVE_DREMPEL;
 
-        if (touch.mode === "scale" || (touch.mode === "gesture" && isPinchGesture)) {
-          const scaleFactor = touch.prevDist > 0 ? curDist / touch.prevDist : 1;
-          state.target.scale = clamp(state.target.scale * scaleFactor, OBJECT_MIN_SCHAAL, OBJECT_MAX_SCHAAL);
-          if (touch.mode !== "scale") {
-            touch.mode = "scale";
-            setModeIndicator("scale");
-            showHint("PINCH OM TE SCHALEN");
-          }
-        } else if (touch.mode === "rotate" || (touch.mode === "gesture" && (isRotateGesture || Math.abs(angleDelta) > ROTATIE_DREMPEL))) {
-          state.target.rotY = wrapDegrees(state.target.rotY + (midDeltaX * ROTATE_DRAG_SNELHEID));
-          state.target.rotX = wrapDegrees(state.target.rotX + (midDeltaY * ROTATIE_TILT_SNELHEID));
-          if (touch.mode !== "rotate") {
-            touch.mode = "rotate";
-            setModeIndicator("rotate");
+      if (isPinchGesture) {
+        const scaleFactor = touch.prevDist > 0 ? curDist / touch.prevDist : 1;
+        state.target.scale = clamp(state.target.scale * scaleFactor, OBJECT_MIN_SCHAAL, OBJECT_MAX_SCHAAL);
+        if (touch.mode !== "scale") {
+          touch.mode = "scale";
+          setModeIndicator("scale");
+          showHint("PINCH OM TE SCHALEN");
+        }
+      } else if (isRotateGesture || Math.abs(angleDelta) > ROTATIE_DREMPEL) {
+        state.target.rotY = wrapDegrees(state.target.rotY + (midDeltaX * ROTATE_DRAG_SNELHEID));
+        state.target.rotX = wrapDegrees(state.target.rotX + (midDeltaY * ROTATIE_TILT_SNELHEID));
+        if (touch.mode !== "rotate") {
+          touch.mode = "rotate";
+          setModeIndicator("rotate");
           showHint("TWEE VINGERS ROTEREN");
         }
       }
